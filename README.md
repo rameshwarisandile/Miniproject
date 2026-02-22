@@ -20,5 +20,9 @@ Built with **React + TypeScript + Tailwind + shadcn/ui + Vite**, it provides a s
 - **AI Chat:** OpenAI API integration  
 - **Version Control:** Git + GitHub  
 
-**Github**
+---
+## Github
 **Clone Repository:** https://github.com/rameshwarisandile/Miniproject.git
+
+
+---
