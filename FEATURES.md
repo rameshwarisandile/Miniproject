@@ -1,4 +1,4 @@
-# 🚀 Girlgorithm - Mental Wellness App Features
+# 🚀  A Voice Enabled AI Mental Wellness Companion - App Features
 
 ## ✨ **Newly Added Features**
 
