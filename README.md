@@ -1,6 +1,6 @@
-# 🌸 Girlgorithm – Mood Nest 💙  
+# 🌸 A Voice Enabled AI Mental Wellness Companion – Mood Nest 💙  
 
-Mindful Buddy is your **AI-powered mental wellness companion**, designed to help users track their emotions, reflect on their day, and get gentle AI support.  
+Mindful Buddy is your **A Voice Enabled AI Mental Wellness Companion**, designed to help users track their emotions, reflect on their day, and get gentle AI support.  
 Built with **React + TypeScript + Tailwind + shadcn/ui + Vite**, it provides a smooth and modern chat experience.  
 
 ---
