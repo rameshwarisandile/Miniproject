@@ -13,7 +13,8 @@ const Signup = () => {
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    profileImage: ""
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ const Signup = () => {
   const handleSignup = (e) => {
     e.preventDefault();
     setError("");
-    const { name, email, password, confirmPassword } = formData;
+    const { name, email, password, confirmPassword, profileImage } = formData;
     if (!name || !email || !password || !confirmPassword) {
       setError("Please fill in all fields.");
       return;
@@ -61,16 +62,36 @@ const Signup = () => {
     }
     // Hash password, encrypt, store
     const hashed = hashPassword(password);
-    const userData = { name, email, password: hashed };
+    const userData = { name, email, password: hashed, profileImage };
     const encrypted = encryptData(userData);
     localStorage.setItem("secureUser", encrypted);
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("loggedInUserName", name);
+    localStorage.setItem("loggedInUserImage", profileImage || "");
     navigate("/dashboard");
   };
 
   const updateFormData = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Handle image upload
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.match(/^image\/(jpeg|png|jpg)$/)) {
+      setError("Only JPG, JPEG, PNG files allowed.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Image must be less than 2MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      updateFormData("profileImage", reader.result.toString());
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -157,8 +178,21 @@ const Signup = () => {
               </div>
             </div>
             
-            <Button 
-              type="submit" 
+            <div className="space-y-2">
+              <Label htmlFor="profileImage" className="text-card-foreground">Profile Image (optional)</Label>
+              <Input
+                id="profileImage"
+                type="file"
+                accept="image/png, image/jpeg, image/jpg"
+                onChange={handleImageChange}
+                className="bg-input border-border text-foreground"
+              />
+              {formData.profileImage && (
+                <img src={formData.profileImage} alt="Preview" className="w-16 h-16 rounded-full object-cover mt-2 mx-auto border" />
+              )}
+            </div>
+            <Button
+              type="submit"
               className="w-full bg-serenity-gradient hover:opacity-90 text-white border-0 transition-all duration-300 hover:shadow-serenity hover:scale-105"
             >
               Create Account

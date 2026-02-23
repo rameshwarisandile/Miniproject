@@ -9,6 +9,7 @@ import Chatbot from "@/components/ui/Chatbot";
 
 const Dashboard = () => {
   const [userName, setUserName] = useState("");
+  const [userImage, setUserImage] = useState("");
   const [showChatbot, setShowChatbot] = useState(false); // ✅ added state
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -19,9 +20,11 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
-    // Get user name from localStorage
+    // Get user name and image from localStorage
     const storedName = localStorage.getItem("loggedInUserName");
+    const storedImage = localStorage.getItem("loggedInUserImage");
     setUserName(storedName || "");
+    setUserImage(storedImage || "");
   }, [navigate]);
 
   // Optional: close dropdown on outside click
@@ -80,7 +83,11 @@ const Dashboard = () => {
                 id="profile-menu"
                 className="absolute right-0 mt-2 w-44 bg-card border border-border rounded-lg shadow-lg z-50 flex flex-col items-center py-4 animate-fade-in"
               >
-                <User className="w-8 h-8 mb-2 text-muted-foreground" />
+                {userImage ? (
+                  <img src={userImage} alt="Profile" className="w-16 h-16 rounded-full object-cover mb-2 border" />
+                ) : (
+                  <User className="w-8 h-8 mb-2 text-muted-foreground" />
+                )}
                 <span className="text-sm font-semibold text-foreground mb-2">{userName}</span>
                 <Button
                   variant="outline"

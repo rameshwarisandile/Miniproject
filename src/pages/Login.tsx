@@ -58,6 +58,7 @@ const Login = () => {
     }
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("loggedInUserName", user.name || "");
+    localStorage.setItem("loggedInUserImage", user.profileImage || "");
     navigate("/dashboard");
   };
 
