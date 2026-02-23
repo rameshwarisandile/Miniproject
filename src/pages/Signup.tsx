@@ -1,4 +1,5 @@
 import { useState } from "react";
+import CryptoJS from "crypto-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,18 +15,57 @@ const Signup = () => {
     password: "",
     confirmPassword: ""
   });
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSignup = (e: React.FormEvent) => {
+  // Helper: SHA-256 hash
+  const hashPassword = (pwd) => {
+    return CryptoJS.SHA256(pwd).toString();
+  };
+
+  // Helper: AES encrypt/decrypt
+  const AES_SECRET = "moodnest_secret_key"; // Should be env in real app
+  const encryptData = (data) => {
+    return CryptoJS.AES.encrypt(JSON.stringify(data), AES_SECRET).toString();
+  };
+  const decryptData = (cipher) => {
+    try {
+      const bytes = CryptoJS.AES.decrypt(cipher, AES_SECRET);
+      return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    } catch {
+      return null;
+    }
+  };
+
+  // Signup handler
+  const handleSignup = (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+    setError("");
+    const { name, email, password, confirmPassword } = formData;
+    if (!name || !email || !password || !confirmPassword) {
+      setError("Please fill in all fields.");
       return;
     }
-    // Mock signup - in real app would create account
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userEmail", formData.email);
-    localStorage.setItem("userName", formData.name);
+    if (password !== confirmPassword) {
+      setError("Passwords don't match!");
+      return;
+    }
+    // Prevent duplicate email
+    const existing = localStorage.getItem("secureUser");
+    if (existing) {
+      const user = decryptData(existing);
+      if (user && user.email === email) {
+        setError("Email already registered. Please login.");
+        return;
+      }
+    }
+    // Hash password, encrypt, store
+    const hashed = hashPassword(password);
+    const userData = { name, email, password: hashed };
+    const encrypted = encryptData(userData);
+    localStorage.setItem("secureUser", encrypted);
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("loggedInUserName", name);
     navigate("/dashboard");
   };
 
@@ -46,6 +86,9 @@ const Signup = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-6">
+            {error && (
+              <div className="text-red-500 text-sm mb-2">{error}</div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="name" className="text-card-foreground">Full Name</Label>
               <Input

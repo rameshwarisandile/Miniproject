@@ -1,4 +1,5 @@
 import { useState } from "react";
+import CryptoJS from "crypto-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,13 +11,53 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Helper: SHA-256 hash
+  const hashPassword = (pwd) => {
+    return CryptoJS.SHA256(pwd).toString();
+  };
+
+  // Helper: AES encrypt/decrypt
+  const AES_SECRET = "moodnest_secret_key"; // Should be env in real app
+  const encryptData = (data) => {
+    return CryptoJS.AES.encrypt(JSON.stringify(data), AES_SECRET).toString();
+  };
+  const decryptData = (cipher) => {
+    try {
+      const bytes = CryptoJS.AES.decrypt(cipher, AES_SECRET);
+      return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    } catch {
+      return null;
+    }
+  };
+
+  // Login handler
+  const handleLogin = (e) => {
     e.preventDefault();
-    // Mock login - in real app would validate credentials
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userEmail", email);
+    setError("");
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    const encrypted = localStorage.getItem("secureUser");
+    if (!encrypted) {
+      setError("User not found. Please sign up first.");
+      return;
+    }
+    const user = decryptData(encrypted);
+    if (!user || user.email !== email) {
+      setError("User not found. Please sign up first.");
+      return;
+    }
+    const hashed = hashPassword(password);
+    if (user.password !== hashed) {
+      setError("Incorrect password.");
+      return;
+    }
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("loggedInUserName", user.name || "");
     navigate("/dashboard");
   };
 
@@ -33,6 +74,9 @@ const Login = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">
+            {error && (
+              <div className="text-red-500 text-sm mb-2">{error}</div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-card-foreground">Email</Label>
               <Input

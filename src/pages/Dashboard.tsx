@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Heart, MessageCircle, Calendar, TrendingUp, Shield } from "lucide-react";
+import { LogOut, Heart, MessageCircle, Calendar, TrendingUp, Shield, User, Menu } from "lucide-react";
 
 // ✅ added import
 import Chatbot from "@/components/ui/Chatbot";
@@ -10,25 +10,36 @@ import Chatbot from "@/components/ui/Chatbot";
 const Dashboard = () => {
   const [userName, setUserName] = useState("");
   const [showChatbot, setShowChatbot] = useState(false); // ✅ added state
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAuth = localStorage.getItem("isAuthenticated");
-    const name = localStorage.getItem("userName");
-    
-    if (!isAuth) {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (!isLoggedIn) {
       navigate("/login");
       return;
     }
-    
-    setUserName(name || "Friend");
+    // Get user name from localStorage
+    const storedName = localStorage.getItem("loggedInUserName");
+    setUserName(storedName || "");
   }, [navigate]);
 
+  // Optional: close dropdown on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (e) => {
+      if (!(e.target.closest && e.target.closest("#profile-menu"))) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
+
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
-    navigate("/");
+    localStorage.removeItem("isLoggedIn");
+    setMenuOpen(false);
+    navigate("/login");
   };
 
   const getMoodData = () => {
@@ -54,14 +65,34 @@ const Dashboard = () => {
               Serenity
             </h1>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            className="flex items-center space-x-2 hover:shadow-serenity transition-all duration-300"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
-          </Button>
+          {/* Hamburger Menu Profile */}
+          <div className="relative flex items-center">
+            <button
+              id="profile-menu"
+              aria-label="Open profile menu"
+              className="p-2 rounded hover:bg-muted/40 focus:outline-none"
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              <Menu className="w-7 h-7 text-muted-foreground" />
+            </button>
+            {menuOpen && (
+              <div
+                id="profile-menu"
+                className="absolute right-0 mt-2 w-44 bg-card border border-border rounded-lg shadow-lg z-50 flex flex-col items-center py-4 animate-fade-in"
+              >
+                <User className="w-8 h-8 mb-2 text-muted-foreground" />
+                <span className="text-sm font-semibold text-foreground mb-2">{userName}</span>
+                <Button
+                  variant="outline"
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 px-3 py-1 text-xs h-auto"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -69,7 +100,7 @@ const Dashboard = () => {
         {/* Welcome Section */}
         <div className="mb-8 animate-fade-in">
           <h2 className="text-4xl font-bold mb-2 text-foreground">
-            Welcome back, {userName}! 
+            Welcome back{userName ? `, ${userName}` : ""}!
           </h2>
           <p className="text-xl text-muted-foreground">
             How are you feeling today? Let's check in with your wellness journey.
