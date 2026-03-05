@@ -147,6 +147,15 @@ const CrisisSupport = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Dashboard Back Button */}
+      <div className="mb-4">
+        <a href="/dashboard">
+          <button className="flex items-center space-x-2 bg-transparent hover:bg-[#d946ef] active:bg-[#a21caf] text-[#d946ef] hover:text-white active:text-white font-bold rounded-xl px-6 py-3 shadow transition-all" style={{border: 'none'}}>
+            <span className="mr-2" style={{display: 'inline-block'}}>&#8592;</span>
+            <span>Dashboard</span>
+          </button>
+        </a>
+      </div>
       {/* Crisis Alert Banner */}
       <Alert className="mb-8 border-red-200 bg-red-50">
         <AlertTriangle className="h-4 w-4 text-red-600" />

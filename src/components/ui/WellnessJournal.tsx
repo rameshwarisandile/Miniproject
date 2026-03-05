@@ -239,6 +239,15 @@ const WellnessJournal = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Dashboard Back Button - Main Section */}
+      <div className="mb-4">
+        <a href="/dashboard">
+          <button className="flex items-center space-x-2 bg-transparent hover:bg-[#d946ef] active:bg-[#a21caf] text-[#d946ef] hover:text-white active:text-white font-bold rounded-xl px-6 py-3 shadow transition-all" style={{border: 'none'}}>
+            <span className="mr-2" style={{display: 'inline-block'}}>&#8592;</span>
+            <span>Dashboard</span>
+          </button>
+        </a>
+      </div>
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
           Wellness Journal
@@ -427,6 +436,8 @@ const WellnessJournal = () => {
 
         {/* Sidebar - Stats & Achievements */}
         <div className="space-y-6">
+          {/* Dashboard Back Button - Sidebar */}
+          {/* Removed duplicate dashboard back button from sidebar */}
           {/* Streak Card */}
           <Card>
             <CardHeader>

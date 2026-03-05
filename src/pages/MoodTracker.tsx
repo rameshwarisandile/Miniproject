@@ -86,8 +86,8 @@ const MoodTracker = () => {
       <header className="bg-card/80 backdrop-blur-sm border-b border-serenity-calm/20 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center space-x-4">
           <Link to="/dashboard">
-            <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-              <ArrowLeft className="w-4 h-4" />
+            <Button variant="ghost" size="sm" className="flex items-center space-x-2 bg-transparent hover:bg-[#d946ef] active:bg-[#a21caf] text-[#d946ef] hover:text-white active:text-white font-bold rounded-xl px-6 py-3 shadow transition-all" style={{border: 'none'}}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
               <span>Dashboard</span>
             </Button>
           </Link>
