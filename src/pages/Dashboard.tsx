@@ -1,3 +1,10 @@
+  // Helper to get full image URL
+  const getProfileImageUrl = (img) => {
+    if (!img) return "";
+    if (img.startsWith("http") || img.startsWith("data:")) return img;
+    // Change this to your backend base URL if different
+    return `http://localhost:8120${img}`;
+  };
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,17 +21,29 @@ const Dashboard = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+  // Define userId at the top so all functions can use it
+  const backendUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
+  const userId = backendUser?.id || backendUser?._id || null;
+
   useEffect(() => {
+    // Debug: log backendUser and localStorage image
+    console.log('backendUser:', backendUser);
+    console.log('loggedInUserImage:', localStorage.getItem('loggedInUserImage'));
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     if (!isLoggedIn) {
       navigate("/login");
       return;
     }
-    // Get user name and image from localStorage
-    const storedName = localStorage.getItem("loggedInUserName");
-    const storedImage = localStorage.getItem("loggedInUserImage");
-    setUserName(storedName || "");
-    setUserImage(storedImage || "");
+    if (backendUser) {
+      setUserName(backendUser.name || "");
+      setUserImage(backendUser.profileImage || "");
+    } else {
+      // Fallback to localStorage
+      const storedName = localStorage.getItem("loggedInUserName");
+      const storedImage = localStorage.getItem("loggedInUserImage");
+      setUserName(storedName || "");
+      setUserImage(storedImage || "");
+    }
   }, [navigate]);
 
   // Optional: close dropdown on outside click
@@ -40,23 +59,81 @@ const Dashboard = () => {
   }, [menuOpen]);
 
   const handleLogout = () => {
+    // Remove all per-user data from state (not from localStorage, so other users' data is safe)
+    setUserName("");
+    setUserImage("");
+    // Optionally, clear in-memory state for moods, chats, analytics, journal
+    // (localStorage will be reloaded on next login)
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("backendUser");
+    localStorage.removeItem("jwtToken");
+    localStorage.removeItem("loggedInUserName");
+    localStorage.removeItem("loggedInUserImage");
+    // Clear chatbot messages for this user
+    try {
+      const allChats = JSON.parse(localStorage.getItem("allChatMessages") || '{}');
+      if (userId && allChats[userId]) {
+        delete allChats[userId];
+        localStorage.setItem("allChatMessages", JSON.stringify(allChats));
+      }
+    } catch (e) {}
     setMenuOpen(false);
     navigate("/login");
   };
 
+  // Mood Entries (per user)
   const getMoodData = () => {
-    const storedMoods = localStorage.getItem("moodEntries");
-    if (!storedMoods) return { count: 0, lastMood: null };
-    
-    const moods = JSON.parse(storedMoods);
+    let allMoods = JSON.parse(localStorage.getItem("allMoodEntries") || '{}');
+    const moods = userId && allMoods[userId] ? allMoods[userId] : [];
     return {
       count: moods.length,
-      lastMood: moods[moods.length - 1]?.mood || null
+      lastMood: moods.length > 0 ? moods[moods.length - 1]?.mood : null
     };
   };
 
+  // Chat Sessions (per user)
+  const getChatData = () => {
+    let allChats = JSON.parse(localStorage.getItem("allChatMessages") || '{}');
+    const chats = userId && allChats[userId] ? allChats[userId] : [];
+    return {
+      count: chats.length
+    };
+  };
+
+  // Analytics/Progress (per user, example: mood goal 12/week)
+  const getProgress = () => {
+    let allMoods = JSON.parse(localStorage.getItem("allMoodEntries") || '{}');
+    const moods = userId && allMoods[userId] ? allMoods[userId] : [];
+    // Example: 12 moods/week goal
+    const weekMoods = moods.filter(entry => {
+      const entryDate = new Date(entry.date);
+      const now = new Date();
+      const diff = (now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24);
+      return diff <= 7;
+    });
+    return weekMoods.length > 0 ? Math.round((weekMoods.length / 12) * 100) : 0;
+  };
+
+  // Streak (per user, example: days with at least 1 mood)
+  const getStreak = () => {
+    let allMoods = JSON.parse(localStorage.getItem("allMoodEntries") || '{}');
+    const moods = userId && allMoods[userId] ? allMoods[userId] : [];
+    let streak = 0;
+    let lastDate = null;
+    moods.forEach(entry => {
+      const entryDate = new Date(entry.date).toDateString();
+      if (entryDate !== lastDate) {
+        streak++;
+        lastDate = entryDate;
+      }
+    });
+    return streak;
+  };
+
   const { count: moodCount, lastMood } = getMoodData();
+  const { count: chatCount } = getChatData();
+  const progress = getProgress();
+  const streak = getStreak();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft">
@@ -83,11 +160,16 @@ const Dashboard = () => {
                 id="profile-menu"
                 className="absolute right-0 mt-2 w-44 bg-card border border-border rounded-lg shadow-lg z-50 flex flex-col items-center py-4 animate-fade-in"
               >
-                {userImage ? (
-                  <img src={userImage} alt="Profile" className="w-16 h-16 rounded-full object-cover mb-2 border" />
-                ) : (
-                  <User className="w-8 h-8 mb-2 text-muted-foreground" />
-                )}
+                {/* Profile image rendering below */}
+                <img
+                  src={getProfileImageUrl(userImage) || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=random`}
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full object-cover mb-2 border"
+                  onError={e => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=random`;
+                  }}
+                />
                 <span className="text-sm font-semibold text-foreground mb-2">{userName}</span>
                 <Button
                   variant="outline"
@@ -139,7 +221,7 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">3</div>
+              <div className="text-3xl font-bold text-primary">{streak}</div>
               <p className="text-xs text-muted-foreground">Days active</p>
             </CardContent>
           </Card>
@@ -152,7 +234,7 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">78%</div>
+              <div className="text-3xl font-bold text-primary">{progress}%</div>
               <p className="text-xs text-muted-foreground">Weekly goal</p>
             </CardContent>
           </Card>
@@ -165,7 +247,7 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">12</div>
+              <div className="text-3xl font-bold text-primary">{chatCount}</div>
               <p className="text-xs text-muted-foreground">This month</p>
             </CardContent>
           </Card>

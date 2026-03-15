@@ -34,32 +34,58 @@ const Login = () => {
   };
 
   // Login handler
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     if (!email || !password) {
       setError("Please fill in all fields.");
       return;
     }
+    // LocalStorage logic
     const encrypted = localStorage.getItem("secureUser");
-    if (!encrypted) {
-      setError("User not found. Please sign up first.");
-      return;
+    let localUser = null;
+    if (encrypted) {
+      localUser = decryptData(encrypted);
+      if (!localUser || localUser.email !== email) {
+        localUser = null;
+      } else {
+        const hashed = hashPassword(password);
+        if (localUser.password !== hashed) {
+          setError("Incorrect password.");
+          return;
+        }
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("loggedInUserName", localUser.name || "");
+        localStorage.setItem("loggedInUserImage", localUser.profileImage || "");
+      }
     }
-    const user = decryptData(encrypted);
-    if (!user || user.email !== email) {
-      setError("User not found. Please sign up first.");
-      return;
+    // --- Backend login ---
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.token) {
+        localStorage.setItem("jwtToken", data.token);
+        localStorage.setItem("backendUser", JSON.stringify(data.user));
+        // Optionally: set isLoggedIn, name, image from backend
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("loggedInUserName", data.user.name || "");
+        localStorage.setItem("loggedInUserImage", data.user.profileImage || "");
+        navigate("/dashboard");
+        return;
+      } else if (!localUser) {
+        setError(data.message || "Login failed");
+        return;
+      }
+      // If localUser exists, allow login (already set above)
+      navigate("/dashboard");
+    } catch (err) {
+      if (!localUser) setError("Login failed (backend error)");
+      else navigate("/dashboard");
     }
-    const hashed = hashPassword(password);
-    if (user.password !== hashed) {
-      setError("Incorrect password.");
-      return;
-    }
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("loggedInUserName", user.name || "");
-    localStorage.setItem("loggedInUserImage", user.profileImage || "");
-    navigate("/dashboard");
   };
 
   return (

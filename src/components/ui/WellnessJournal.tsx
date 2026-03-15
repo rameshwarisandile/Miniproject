@@ -49,9 +49,17 @@ const WellnessJournal = () => {
   const [currentStreak, setCurrentStreak] = useState(0);
 
   useEffect(() => {
-    loadJournalData();
+    // Load only current user's journal entries
+    const loggedInUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
+    const userId = loggedInUser?.id || loggedInUser?._id || null;
+    let allEntries = JSON.parse(localStorage.getItem("allWellnessJournal") || '{}');
+    if (userId && allEntries[userId]) {
+      setEntries(allEntries[userId]);
+    } else {
+      setEntries([]);
+    }
     checkAchievements();
-  }, []);
+  }, [localStorage.getItem("backendUser")]);
 
   const loadJournalData = () => {
     const savedEntries = localStorage.getItem("wellnessJournal");
@@ -135,22 +143,42 @@ const WellnessJournal = () => {
     }));
   };
 
-  const saveEntry = () => {
+  const saveEntry = async () => {
     if (!currentEntry.mood || currentEntry.gratitude.length === 0) {
       alert("Please select a mood and add at least one gratitude item.");
       return;
     }
-
     const entry: JournalEntry = {
       ...currentEntry,
       id: Date.now().toString(),
       date: new Date().toISOString().split('T')[0]
     };
-
-    const updatedEntries = [entry, ...entries];
-    setEntries(updatedEntries);
-    localStorage.setItem("wellnessJournal", JSON.stringify(updatedEntries));
-
+    // LocalStorage: user-specific
+    const loggedInUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
+    const userId = loggedInUser?.id || loggedInUser?._id || null;
+    let allEntries = JSON.parse(localStorage.getItem("allWellnessJournal") || '{}');
+    if (!userId) {
+      alert("User not found. Please login again.");
+      return;
+    }
+    if (!allEntries[userId]) allEntries[userId] = [];
+    allEntries[userId] = [entry, ...allEntries[userId]];
+    localStorage.setItem("allWellnessJournal", JSON.stringify(allEntries));
+    setEntries(allEntries[userId]);
+    // --- Backend ---
+    try {
+      const token = localStorage.getItem("jwtToken");
+      if (token) {
+        await fetch("/api/journal", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(entry),
+        });
+      }
+    } catch (err) {}
     // Reset form
     setCurrentEntry({
       id: "",
@@ -160,10 +188,8 @@ const WellnessJournal = () => {
       mood: "",
       goals: []
     });
-
     calculateStreak();
     checkAchievements();
-    
     alert("Journal entry saved successfully! 🌟");
   };
 

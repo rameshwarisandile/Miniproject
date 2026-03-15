@@ -32,25 +32,22 @@ const MoodTracker = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAuth = localStorage.getItem("isAuthenticated");
-    if (!isAuth) {
-      navigate("/login");
-      return;
+    // Load only current user's moods
+    const loggedInUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
+    const userId = loggedInUser?.id || loggedInUser?._id || null;
+    let allEntries = JSON.parse(localStorage.getItem("allMoodEntries") || '{}');
+    if (userId && allEntries[userId]) {
+      setEntries(allEntries[userId]);
+    } else {
+      setEntries([]);
     }
+  }, [localStorage.getItem("backendUser")]);
 
-    // Load existing entries
-    const storedEntries = localStorage.getItem("moodEntries");
-    if (storedEntries) {
-      setEntries(JSON.parse(storedEntries));
-    }
-  }, [navigate]);
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedMood) {
       alert("Please select a mood first!");
       return;
     }
-
     const newEntry: MoodEntry = {
       id: Date.now().toString(),
       mood: selectedMood,
@@ -58,16 +55,38 @@ const MoodTracker = () => {
       note,
       date: new Date().toISOString(),
     };
-
-    const updatedEntries = [newEntry, ...entries];
-    setEntries(updatedEntries);
-    localStorage.setItem("moodEntries", JSON.stringify(updatedEntries));
-
+    // LocalStorage: user-specific
+    const loggedInUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
+    const userId = loggedInUser?.id || loggedInUser?._id || null;
+    let allEntries = JSON.parse(localStorage.getItem("allMoodEntries") || '{}');
+    if (!userId) {
+      alert("User not found. Please login again.");
+      return;
+    }
+    if (!allEntries[userId]) allEntries[userId] = [];
+    allEntries[userId] = [newEntry, ...allEntries[userId]];
+    localStorage.setItem("allMoodEntries", JSON.stringify(allEntries));
+    setEntries(allEntries[userId]);
+    // --- Backend ---
+    try {
+      const token = localStorage.getItem("jwtToken");
+      if (token) {
+        await fetch("/api/moods", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ mood: selectedMood, note }),
+        });
+      }
+    } catch (err) {
+      // Optionally: show backend error
+    }
     // Reset form
     setSelectedMood("");
     setIntensity(5);
     setNote("");
-    
     alert("Mood entry saved successfully!");
   };
 

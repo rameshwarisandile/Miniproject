@@ -42,52 +42,63 @@ const Chatbot = () => {
   }, [messages]);
 
   const handleSend = async () => {
-
     if (!input.trim() || isLoading) return;
-
     const userMessage: Message = {
       id: generateId(),
       sender: "user",
       text: input,
       timestamp: new Date()
     };
-
+    // LocalStorage: user-specific
+    const loggedInUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
+    const userId = loggedInUser?.id || loggedInUser?._id || null;
+    let allChats = JSON.parse(localStorage.getItem("allChatMessages") || '{}');
+    if (!userId) return;
+    if (!allChats[userId]) allChats[userId] = [];
+    allChats[userId] = [...allChats[userId], userMessage];
+    localStorage.setItem("allChatMessages", JSON.stringify(allChats));
     setMessages(prev => [...prev, userMessage]);
-
     const userText = input;
     setInput("");
     setIsLoading(true);
-
     try {
-
-      const response = await axios.post("http://localhost:8120/ask", {
-        message: userText
-      });
-
+      const token = localStorage.getItem("jwtToken");
+      if (token) {
+        await axios.post("/api/chats", { message: userText }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+      // Change /ask to /api/ask for proxy compatibility
+      const response = await axios.post("/api/ask", { message: userText });
       const botMessage: Message = {
         id: generateId(),
         sender: "bot",
         text: response.data.reply,
         timestamp: new Date()
       };
-
       setMessages(prev => [...prev, botMessage]);
-
+      // LocalStorage: Save bot reply
+      allChats[userId] = [...allChats[userId], botMessage];
+      localStorage.setItem("allChatMessages", JSON.stringify(allChats));
+      // Backend: Save bot reply
+      if (token) {
+        await axios.post("/api/chats", { message: userText, reply: response.data.reply }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
     } catch (error) {
-
       const botMessage: Message = {
         id: generateId(),
         sender: "bot",
         text: "⚠️ Server connection error. Please try again.",
         timestamp: new Date()
       };
-
       setMessages(prev => [...prev, botMessage]);
-
+      allChats[userId] = [...allChats[userId], botMessage];
+      localStorage.setItem("allChatMessages", JSON.stringify(allChats));
     } finally {
       setIsLoading(false);
     }
-
   };
 
   const handleKeyPress = (e: any) => {
@@ -95,6 +106,36 @@ const Chatbot = () => {
       handleSend();
     }
   };
+
+  useEffect(() => {
+    // On every login, always reset chat for this user if new user (no data)
+    const loggedInUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
+    const userId = loggedInUser?.id || loggedInUser?._id || null;
+    let allChats = JSON.parse(localStorage.getItem("allChatMessages") || '{}');
+    if (userId && (!allChats[userId] || allChats[userId].length === 0)) {
+      allChats[userId] = [
+        {
+          id: "1",
+          sender: "bot",
+          text: "Hello! I'm Mindful Buddy 🤖 How are you feeling today? 💙",
+          timestamp: new Date()
+        }
+      ];
+      localStorage.setItem("allChatMessages", JSON.stringify(allChats));
+      setMessages(allChats[userId]);
+    } else if (userId && allChats[userId]) {
+      setMessages(allChats[userId]);
+    } else {
+      setMessages([
+        {
+          id: "1",
+          sender: "bot",
+          text: "Hello! I'm Mindful Buddy 🤖 How are you feeling today? 💙",
+          timestamp: new Date()
+        }
+      ]);
+    }
+  }, [localStorage.getItem("backendUser")]);
 
   if (!isOpen) {
     return (

@@ -16,6 +16,7 @@ const Signup = () => {
     confirmPassword: "",
     profileImage: ""
   });
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -39,7 +40,7 @@ const Signup = () => {
   };
 
   // Signup handler
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
     const { name, email, password, confirmPassword, profileImage } = formData;
@@ -51,7 +52,7 @@ const Signup = () => {
       setError("Passwords don't match!");
       return;
     }
-    // Prevent duplicate email
+    // Prevent duplicate email in localStorage
     const existing = localStorage.getItem("secureUser");
     if (existing) {
       const user = decryptData(existing);
@@ -60,7 +61,7 @@ const Signup = () => {
         return;
       }
     }
-    // Hash password, encrypt, store
+    // Hash password, encrypt, store in localStorage
     const hashed = hashPassword(password);
     const userData = { name, email, password: hashed, profileImage };
     const encrypted = encryptData(userData);
@@ -68,7 +69,31 @@ const Signup = () => {
     localStorage.setItem("isLoggedIn", "true");
     localStorage.setItem("loggedInUserName", name);
     localStorage.setItem("loggedInUserImage", profileImage || "");
-    navigate("/dashboard");
+
+    // --- Backend API call ---
+    try {
+      const form = new FormData();
+      form.append("name", name);
+      form.append("email", email);
+      form.append("password", password); // send plain password, backend hashes
+      form.append("confirmPassword", confirmPassword);
+      if (profileImageFile) {
+        form.append("profileImage", profileImageFile);
+      }
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Signup failed");
+        return;
+      }
+      // Optionally: show success or redirect
+      navigate("/login");
+    } catch (err) {
+      setError("Signup failed (backend error)");
+    }
   };
 
   const updateFormData = (field: string, value: string) => {
@@ -87,6 +112,7 @@ const Signup = () => {
       setError("Image must be less than 2MB.");
       return;
     }
+    setProfileImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       updateFormData("profileImage", reader.result.toString());
