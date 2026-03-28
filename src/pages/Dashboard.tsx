@@ -50,7 +50,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (!menuOpen) return;
     const handleClick = (e) => {
-      if (!(e.target.closest && e.target.closest("#profile-menu"))) {
+      if (!(e.target.closest && e.target.closest("[data-profile-menu='true']"))) {
         setMenuOpen(false);
       }
     };
@@ -138,8 +138,8 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft">
       {/* Header */}
-      <header className="bg-card/80 backdrop-blur-sm border-b border-serenity-calm/20 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+      <header className="bg-card/80 backdrop-blur-sm border-b border-serenity-calm/20 sticky top-0 z-50 overflow-visible">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center overflow-visible">
           <div className="flex items-center space-x-3">
             <h1 className="text-2xl font-bold bg-serenity-gradient bg-clip-text text-transparent">
               Serenity
@@ -148,147 +148,215 @@ const Dashboard = () => {
           {/* Hamburger Menu Profile */}
           <div className="relative flex items-center">
             <button
-              id="profile-menu"
+              data-profile-menu="true"
               aria-label="Open profile menu"
-              className="p-2 rounded hover:bg-muted/40 focus:outline-none"
+              aria-expanded={menuOpen}
+              aria-haspopup="menu"
+              className="p-2.5 rounded-lg hover:bg-serenity-gradient/10 hover:shadow-serenity-md focus:outline-none transition-all duration-300 group"
               onClick={() => setMenuOpen((v) => !v)}
             >
-              <Menu className="w-7 h-7 text-muted-foreground" />
+              <Menu className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
             </button>
             {menuOpen && (
               <div
-                id="profile-menu"
-                className="absolute right-0 mt-2 w-44 bg-card border border-border rounded-lg shadow-lg z-50 flex flex-col items-center py-4 animate-fade-in"
+                data-profile-menu="true"
+                role="menu"
+                className="absolute right-0 top-[calc(100%+0.7rem)] w-[min(18rem,calc(100vw-2rem))] z-[80] flex flex-col animate-fade-in rounded-2xl overflow-hidden border border-serenity-calm/35 bg-card/95 backdrop-blur-md shadow-serenity-lg"
               >
-                {/* Profile image rendering below */}
-                <img
-                  src={getProfileImageUrl(userImage) || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=random`}
-                  alt="Profile"
-                  className="w-16 h-16 rounded-full object-cover mb-2 border"
-                  onError={e => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=random`;
-                  }}
-                />
-                <span className="text-sm font-semibold text-foreground mb-2">{userName}</span>
-                <Button
-                  variant="outline"
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 px-3 py-1 text-xs h-auto"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sign Out</span>
-                </Button>
+                {/* Profile Header Background */}
+                <div className="bg-serenity-gradient/10 pt-6 pb-4 px-6 flex flex-col items-center border-b border-serenity-calm/20">
+                  {/* Profile image rendering */}
+                  <div className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-serenity-gradient shadow-serenity-lg overflow-hidden flex-shrink-0">
+                    <img
+                      src={getProfileImageUrl(userImage) || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=random`}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      onError={e => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=random`;
+                      }}
+                    />
+                  </div>
+                  <span className="text-lg font-bold text-foreground text-center">{userName}</span>
+                  <span className="text-xs text-muted-foreground mt-1">Account owner</span>
+                </div>
+
+                {/* Action Section */}
+                <div className="px-4 py-4 flex flex-col space-y-3">
+                  <Button
+                    onClick={handleLogout}
+                    className="w-full btn-primary-enhanced py-2.5 rounded-lg text-sm font-semibold"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    <span>Sign Out</span>
+                  </Button>
+                </div>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 relative">
+        {/* Ambient background elements for visual depth */}
+        <div className="pointer-events-none absolute -top-8 -left-12 w-44 h-44 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute top-6 right-0 w-36 h-36 rounded-full bg-pink-400/10 blur-3xl" />
+
         {/* Welcome Section */}
-        <div className="mb-8 animate-fade-in">
-          <h2 className="text-4xl font-bold mb-2 text-foreground">
-            Welcome back{userName ? `, ${userName}` : ""}!
-          </h2>
-          <p className="text-xl text-muted-foreground">
-            How are you feeling today? Let's check in with your wellness journey.
-          </p>
+        <div className="mb-8 animate-fade-in dashboard-hero-surface rounded-3xl p-6 md:p-8 relative overflow-hidden">
+          <div className="relative z-10 grid lg:grid-cols-[1.5fr_1fr] gap-6 items-center">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-bold mb-3 text-foreground leading-tight">
+                Welcome back{userName ? `, ${userName}` : ""}!
+              </h2>
+              <p className="text-base md:text-xl text-muted-foreground max-w-2xl">
+                How are you feeling today? Let's check in with your wellness journey.
+              </p>
+
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                <span className="px-3 py-1.5 rounded-full bg-card/70 border border-serenity-calm/40 text-sm text-foreground">
+                  Mood logs: {moodCount}
+                </span>
+                <span className="px-3 py-1.5 rounded-full bg-card/70 border border-serenity-calm/40 text-sm text-foreground">
+                  Active streak: {streak} days
+                </span>
+                <span className="px-3 py-1.5 rounded-full bg-card/70 border border-serenity-calm/40 text-sm text-foreground">
+                  Weekly progress: {progress}%
+                </span>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-serenity-calm/30 bg-card/65 backdrop-blur-sm p-5 shadow-serenity-md">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/60 shadow-serenity-md">
+                  <img
+                    src={getProfileImageUrl(userImage) || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=random`}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    onError={e => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'User')}&background=random`;
+                    }}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Signed in as</p>
+                  <p className="text-base font-semibold text-foreground">{userName || "User"}</p>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-xs font-semibold tracking-wide text-muted-foreground mb-2">MOOD PULSE</p>
+                <div className="dashboard-pulse-track">
+                  <span className="dashboard-pulse-bar" />
+                  <span className="dashboard-pulse-bar" />
+                  <span className="dashboard-pulse-bar" />
+                  <span className="dashboard-pulse-bar" />
+                  <span className="dashboard-pulse-bar" />
+                  <span className="dashboard-pulse-bar" />
+                  <span className="dashboard-pulse-bar" />
+                  <span className="dashboard-pulse-bar" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Quick Stats */}
         <div className="grid md:grid-cols-4 gap-6 mb-8 animate-slide-up">
-          <Card className="hover:shadow-serenity transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
-                <Heart className="w-4 h-4" />
-                <span>Mood Entries</span>
+          <Card className="card-elevated stat-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xs font-bold label-enhanced flex items-center space-x-2 text-muted-foreground">
+                <Heart className="w-4 h-4 text-primary" />
+                <span>MOOD ENTRIES</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">{moodCount}</div>
-              <p className="text-xs text-muted-foreground">
-                {lastMood ? `Last: ${lastMood}` : "No entries yet"}
+              <div className="text-4xl font-bold text-gradient-primary">{moodCount}</div>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                {lastMood ? `Last: ${lastMood} 🎯` : "No entries yet"}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-serenity transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
-                <Calendar className="w-4 h-4" />
-                <span>Streak</span>
+          <Card className="card-elevated stat-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xs font-bold label-enhanced flex items-center space-x-2 text-muted-foreground">
+                <Calendar className="w-4 h-4 text-primary" />
+                <span>STREAK</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">{streak}</div>
-              <p className="text-xs text-muted-foreground">Days active</p>
+              <div className="text-4xl font-bold text-gradient-primary">{streak}</div>
+              <p className="text-xs text-muted-foreground mt-1">Days active 🔥</p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-serenity transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
-                <TrendingUp className="w-4 h-4" />
-                <span>Progress</span>
+          <Card className="card-elevated stat-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xs font-bold label-enhanced flex items-center space-x-2 text-muted-foreground">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <span>PROGRESS</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">{progress}%</div>
-              <p className="text-xs text-muted-foreground">Weekly goal</p>
+              <div className="text-4xl font-bold text-gradient-primary">{progress}%</div>
+              <p className="text-xs text-muted-foreground mt-1">Weekly goal ⭐</p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-serenity transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
-                <MessageCircle className="w-4 h-4" />
-                <span>Chat Sessions</span>
+          <Card className="card-elevated stat-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xs font-bold label-enhanced flex items-center space-x-2 text-muted-foreground">
+                <MessageCircle className="w-4 h-4 text-primary" />
+                <span>CHAT SESSIONS</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-primary">{chatCount}</div>
-              <p className="text-xs text-muted-foreground">This month</p>
+              <div className="text-4xl font-bold text-gradient-primary">{chatCount}</div>
+              <p className="text-xs text-muted-foreground mt-1">This month 💬</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up delay-100">
-          <Card className="p-6 hover:shadow-serenity transition-all duration-300 hover:-translate-y-2">
+          <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
             <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-serenity-gradient rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
                 <Heart className="text-white w-8 h-8" />
               </div>
-              <CardTitle className="text-xl">Track Your Mood</CardTitle>
-              <CardDescription className="text-sm">
-                Log how you're feeling today and discover patterns
+              <CardTitle className="text-xl font-bold text-foreground">Track Your Mood</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2">
+                Log how you're feeling today and discover patterns in your emotions
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Link to="/mood-tracker">
-                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 transition-all duration-300 hover:shadow-serenity">
+                <Button
+                  size="sm"
+                  className="btn-primary-enhanced px-6 py-2.5 rounded-lg"
+                >
                   Check In Now
                 </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="p-6 hover:shadow-serenity transition-all duration-300 hover:-translate-y-2">
+          <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
             <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-serenity-gradient rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
                 <MessageCircle className="text-white w-8 h-8" />
               </div>
-              <CardTitle className="text-xl">AI Companion</CardTitle>
-              <CardDescription className="text-sm">
-                Get personalized support and coping strategies
+              <CardTitle className="text-xl font-bold text-foreground">AI Companion</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2">
+                Get personalized support and coping strategies from our AI
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Button 
                 size="sm" 
-                variant="outline"
-                className="px-6 py-2 transition-all duration-300 hover:shadow-serenity"
+                className="btn-primary-enhanced px-6 py-2.5 rounded-lg"
                 onClick={() => setShowChatbot(!showChatbot)}
               >
                 {showChatbot ? "Close Chat" : "Open Chat"}
@@ -296,76 +364,76 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="p-6 hover:shadow-serenity transition-all duration-300 hover:-translate-y-2">
+          <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
             <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-serenity-gradient rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
                 <Heart className="text-white w-8 h-8" />
               </div>
-              <CardTitle className="text-xl">Meditation</CardTitle>
-              <CardDescription className="text-sm">
-                Guided sessions and breathing exercises
+              <CardTitle className="text-xl font-bold text-foreground">Meditation</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2">
+                Guided sessions and breathing exercises for inner peace
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Link to="/meditation">
-                <Button size="sm" variant="outline" className="px-6 py-2 transition-all duration-300 hover:shadow-serenity">
+                <Button size="sm" className="btn-primary-enhanced px-6 py-2.5 rounded-lg">
                   Start Session
                 </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="p-6 hover:shadow-serenity transition-all duration-300 hover:-translate-y-2">
+          <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
             <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-serenity-gradient rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
                 <Heart className="text-white w-8 h-8" />
               </div>
-              <CardTitle className="text-xl">Journal</CardTitle>
-              <CardDescription className="text-sm">
-                Daily gratitude and reflection practice
+              <CardTitle className="text-xl font-bold text-foreground">Journal</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2">
+                Daily gratitude and reflection practice for wellness
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Link to="/journal">
-                <Button size="sm" variant="outline" className="px-6 py-2 transition-all duration-300 hover:shadow-serenity">
+                <Button size="sm" className="btn-primary-enhanced px-6 py-2.5 rounded-lg">
                   Write Today
                 </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="p-6 hover:shadow-serenity transition-all duration-300 hover:-translate-y-2">
+          <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
             <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-serenity-gradient rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
                 <TrendingUp className="text-white w-8 h-8" />
               </div>
-              <CardTitle className="text-xl">Analytics</CardTitle>
-              <CardDescription className="text-sm">
-                Track progress and discover insights
+              <CardTitle className="text-xl font-bold text-foreground">Analytics</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2">
+                Track progress and discover insights about your wellness
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Link to="/analytics">
-                <Button size="sm" variant="outline" className="px-6 py-2 transition-all duration-300 hover:shadow-serenity">
+                <Button size="sm" className="btn-primary-enhanced px-6 py-2.5 rounded-lg">
                   View Insights
                 </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="p-6 hover:shadow-serenity transition-all duration-300 hover:-translate-y-2">
+          <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
             <CardHeader className="text-center pb-4">
-              <div className="w-16 h-16 bg-serenity-gradient rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
                 <Shield className="text-white w-8 h-8" />
               </div>
-              <CardTitle className="text-xl">Crisis Support</CardTitle>
-              <CardDescription className="text-sm">
-                Emergency resources and safety planning
+              <CardTitle className="text-xl font-bold text-foreground">Crisis Support</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2">
+                Emergency resources and safety planning when you need it most
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Link to="/crisis-support">
-                <Button size="sm" variant="outline" className="px-6 py-2 transition-all duration-300 hover:shadow-serenity">
+                <Button size="sm" className="btn-primary-enhanced px-6 py-2.5 rounded-lg">
                   Get Help
                 </Button>
               </Link>

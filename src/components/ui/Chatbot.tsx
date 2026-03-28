@@ -285,7 +285,7 @@ const Chatbot: React.FC = () => {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 w-14 h-14 rounded-full bg-blue-500 text-white shadow-lg"
+        className="fixed bottom-6 right-5 w-14 h-14 rounded-full btn-primary-enhanced text-white shadow-serenity-lg z-[90]"
       >
         <Bot className="w-6 h-6" />
       </Button>
@@ -293,38 +293,38 @@ const Chatbot: React.FC = () => {
   }
 
   return (
-    <Card className="fixed bottom-20 right-4 w-96 h-[500px] shadow-2xl flex flex-col rounded-xl">
-      <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-2xl flex flex-col">
+    <Card className="fixed bottom-6 right-3 sm:right-5 md:right-6 w-[min(34rem,calc(100vw-1.5rem))] h-[min(76vh,680px)] min-h-[560px] shadow-serenity-lg flex flex-col rounded-2xl border border-serenity-calm/35 bg-card/95 backdrop-blur-md z-[85] overflow-hidden">
+      <CardHeader className="bg-serenity-gradient text-white p-5 rounded-none flex flex-col border-b border-white/10">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             <Bot className="w-5 h-5" />
-            <CardTitle className="text-lg font-semibold">
+            <CardTitle className="text-lg md:text-xl font-semibold">
               Mindful Buddy <span role="img" aria-label="robot">🤖</span>
             </CardTitle>
           </div>
-          <Button variant="ghost" onClick={() => setIsOpen(false)} className="ml-auto">
-            <X className="w-5 h-5 text-white" />
+          <Button variant="ghost" onClick={() => setIsOpen(false)} className="ml-auto text-white/90 hover:text-white hover:bg-white/15">
+            <X className="w-5 h-5" />
           </Button>
         </div>
-        <p className="text-sm text-blue-100 mt-1">Your AI companion for mental wellness</p>
+        <p className="text-base text-white/85 mt-2">Your AI companion for mental wellness</p>
       </CardHeader>
 
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 px-4 py-5 md:px-5" ref={scrollRef}>
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`flex mb-3 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+            className={`flex mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
           >
             <div className="flex items-start gap-2 max-w-[80%]">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center
-                ${msg.sender === "user" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center mt-0.5
+                ${msg.sender === "user" ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
               >
                 {msg.sender === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
               </div>
               <div
-                className={`rounded-2xl px-4 py-2
-                ${msg.sender === "user" ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-800"}`}
+                className={`rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed border
+                ${msg.sender === "user" ? "bg-primary text-primary-foreground border-primary/20" : "bg-foreground/5 text-foreground border-serenity-calm/35"}`}
               >
                 <div className="text-sm">{msg.text}</div>
               </div>
@@ -340,11 +340,11 @@ const Chatbot: React.FC = () => {
         )}
       </ScrollArea>
 
-      <div className="p-4 border-t flex gap-2">
+      <div className="p-4 border-t border-serenity-calm/25 bg-card/80 flex gap-2.5">
         <Button
           type="button"
           onClick={isListening ? stopListening : startListening}
-          className={`flex items-center justify-center ${isListening ? "bg-red-500 animate-pulse" : ""}`}
+          className={`h-12 w-12 flex items-center justify-center rounded-xl ${isListening ? "bg-red-500 animate-pulse text-white" : "btn-primary-enhanced"}`}
           title={isListening ? "Stop Listening" : "Start Voice Input"}
           disabled={isListening}
         >
@@ -356,8 +356,9 @@ const Chatbot: React.FC = () => {
           onKeyDown={handleKeyPress}
           placeholder="Ask something..."
           disabled={isLoading}
+          className="h-12 rounded-xl border-serenity-calm/35 bg-background/80"
         />
-        <Button onClick={() => sendMessage(input)} disabled={isLoading || !input.trim()}>
+        <Button onClick={() => sendMessage(input)} disabled={isLoading || !input.trim()} className="h-12 w-12 rounded-xl btn-primary-enhanced p-0">
           <Send className="w-4 h-4" />
         </Button>
       </div>

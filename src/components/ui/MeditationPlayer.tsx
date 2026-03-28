@@ -368,7 +368,10 @@ const MeditationPlayer = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft relative overflow-hidden meditation-static-ui">
+      <div className="pointer-events-none absolute top-8 -left-16 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-16 -right-16 w-72 h-72 rounded-full bg-pink-500/10 blur-3xl" />
+      <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
        {/* Dashboard Back Button */}
       <div className="mb-4">
         <a href="/dashboard">
@@ -378,25 +381,25 @@ const MeditationPlayer = () => {
           </button>
         </a>
       </div>
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      <div className="text-center mb-10">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gradient-primary">
           Meditation & Wellness
         </h1>
-        <p className="text-xl text-muted-foreground">
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
           Take a moment to breathe, reflect, and find your center
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid xl:grid-cols-2 gap-8 xl:gap-10 items-start">
                  {/* Session List */}
-         <div className="space-y-4">
+         <div className="space-y-4 xl:sticky xl:top-24">
            <div className="flex items-center justify-between mb-4">
-             <h2 className="text-2xl font-semibold">Available Sessions</h2>
+             <h2 className="text-2xl font-semibold text-foreground">Available Sessions</h2>
              <Button
                variant="outline"
                size="sm"
                onClick={() => setShowHistory(!showHistory)}
-               className="text-sm"
+               className="text-sm border-serenity-calm/45 hover:bg-primary/10 hover:border-primary"
              >
                {showHistory ? "Hide History" : `Show History (${completedSessions.length})`}
              </Button>
@@ -404,27 +407,27 @@ const MeditationPlayer = () => {
           
                      {/* History Section */}
            {showHistory && (
-             <Card className="mb-6 p-4 bg-green-50 border-green-200">
+             <Card className="mb-6 p-4 card-elevated bg-card/80 border-serenity-calm/35">
                <div className="space-y-3">
-                 <h3 className="font-semibold text-green-800 mb-3">📊 Your Meditation History</h3>
+                 <h3 className="font-semibold text-foreground mb-3">📊 Your Meditation History</h3>
                  {completedSessions.length === 0 ? (
-                   <p className="text-sm text-green-700">No sessions completed yet. Start your first meditation!</p>
+                   <p className="text-sm text-muted-foreground">No sessions completed yet. Start your first meditation!</p>
                  ) : (
                    <div className="space-y-2 max-h-40 overflow-y-auto">
                      {completedSessions.slice(-5).reverse().map((session) => (
-                       <div key={session.id} className="flex items-center justify-between p-2 bg-green-100 rounded text-sm">
+                       <div key={session.id} className="flex items-center justify-between p-2.5 bg-muted/45 border border-serenity-calm/25 rounded text-sm">
                          <div>
-                           <span className="font-medium text-green-800">{session.sessionTitle}</span>
-                           <span className="text-green-600 ml-2">({session.duration}m)</span>
+                           <span className="font-medium text-foreground">{session.sessionTitle}</span>
+                           <span className="text-primary ml-2">({session.duration}m)</span>
                          </div>
-                         <div className="text-green-600 text-xs">
+                         <div className="text-muted-foreground text-xs">
                            {new Date(session.completedAt).toLocaleDateString()}
                          </div>
                        </div>
                      ))}
                    </div>
                  )}
-                 <div className="text-xs text-green-600">
+                 <div className="text-xs text-muted-foreground">
                    Total sessions: {completedSessions.length} | 
                    Total time: {completedSessions.reduce((sum, s) => sum + s.duration, 0)} minutes
                  </div>
@@ -433,27 +436,27 @@ const MeditationPlayer = () => {
            )}
            
            {/* Demo Section */}
-           <Card className="mb-6 p-4 bg-blue-50 border-blue-200">
+           <Card className="mb-6 p-4 card-elevated bg-card/80 border-serenity-calm/35">
             <div className="text-center">
-              <h3 className="font-semibold text-blue-800 mb-2">🎯 How It Works - Quick Demo</h3>
-              <p className="text-sm text-blue-700 mb-3">
+              <h3 className="font-semibold text-foreground mb-2">🎯 How It Works - Quick Demo</h3>
+              <p className="text-sm text-muted-foreground mb-3">
                 Click "Mindful Breathing" to see the breathing exercise in action!
               </p>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="bg-blue-100 p-2 rounded">
-                  <div className="font-bold text-blue-600">↗</div>
+                <div className="bg-primary/10 p-2 rounded border border-primary/20">
+                  <div className="font-bold text-primary">↗</div>
                   <div>Breathe In</div>
-                  <div className="text-blue-500">4 seconds</div>
+                  <div className="text-primary/80">4 seconds</div>
                 </div>
-                <div className="bg-purple-100 p-2 rounded">
-                  <div className="font-bold text-purple-600">●</div>
+                <div className="bg-purple-500/15 p-2 rounded border border-purple-400/25">
+                  <div className="font-bold text-purple-300">●</div>
                   <div>Hold</div>
-                  <div className="text-purple-500">2 seconds</div>
+                  <div className="text-purple-300/90">2 seconds</div>
                 </div>
-                <div className="bg-green-100 p-2 rounded">
-                  <div className="font-bold text-green-600">↘</div>
+                <div className="bg-emerald-500/15 p-2 rounded border border-emerald-400/25">
+                  <div className="font-bold text-emerald-300">↘</div>
                   <div>Breathe Out</div>
-                  <div className="text-green-500">4 seconds</div>
+                  <div className="text-emerald-300/90">4 seconds</div>
                 </div>
               </div>
             </div>
@@ -462,7 +465,7 @@ const MeditationPlayer = () => {
           {meditationSessions.map((session) => (
             <Card 
               key={session.id} 
-              className="hover:shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1"
+              className="card-elevated bg-card/85 hover:shadow-serenity-lg cursor-pointer"
               onClick={() => startSession(session)}
             >
               <CardHeader className="pb-3">
@@ -483,10 +486,10 @@ const MeditationPlayer = () => {
 
         {/* Player */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-semibold mb-4">Current Session</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-foreground">Current Session</h2>
           
           {currentSession ? (
-            <Card className="p-6">
+            <Card className="p-6 card-elevated bg-card/90 border-serenity-calm/35">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-2xl mb-2">{currentSession.title}</CardTitle>
                 <p className="text-muted-foreground">{currentSession.description}</p>
@@ -496,7 +499,7 @@ const MeditationPlayer = () => {
                 {/* Breathing Exercise Display */}
                 {currentSession.type === "breathing" && (
                   <div className="text-center">
-                    <div className={`w-32 h-32 mx-auto rounded-full flex items-center justify-center text-2xl font-bold mb-4 transition-all duration-1000 ${
+                    <div className={`w-32 h-32 mx-auto rounded-full flex items-center justify-center text-2xl font-bold mb-4 ${
                       getBreathingInstructions().bgColor
                     }`}>
                       <span className={getBreathingInstructions().color}>
@@ -511,7 +514,7 @@ const MeditationPlayer = () => {
                     </p>
                     
                                          {/* Step-by-step explanation */}
-                     <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                     <div className="mt-4 p-3 bg-muted/40 border border-serenity-calm/25 rounded-lg">
                        <h4 className="font-semibold text-sm mb-2">📖 What's Happening:</h4>
                        <div className="text-xs text-muted-foreground space-y-1">
                          <p>• <strong>Follow the circle:</strong> It changes color and size to guide your breathing</p>
@@ -522,9 +525,9 @@ const MeditationPlayer = () => {
                      </div>
                      
                      {/* Current Phase Indicator */}
-                     <div className="mt-3 p-2 bg-blue-50 rounded border border-blue-200">
+                     <div className="mt-3 p-2 bg-primary/10 rounded border border-primary/25">
                        <div className="text-center">
-                         <p className="text-xs font-medium text-blue-700 mb-1">Current Phase:</p>
+                         <p className="text-xs font-medium text-primary mb-1">Current Phase:</p>
                          <div className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
                            breathingPhase === "inhale" ? "bg-blue-100 text-blue-700" :
                            breathingPhase === "hold" ? "bg-purple-100 text-purple-700" :
@@ -558,24 +561,24 @@ const MeditationPlayer = () => {
                      
                                            {/* Guided Meditation Steps */}
                       {currentSession.type === "guided" && meditationStep < getMeditationSteps().length && (
-                        <div className="bg-purple-50 p-6 rounded-lg border border-purple-200">
-                          <div className="text-2xl font-bold text-purple-600 mb-4">
+                        <div className="bg-primary/10 p-6 rounded-lg border border-primary/25">
+                          <div className="text-2xl font-bold text-primary mb-4">
                             Step {meditationStep + 1} of {getMeditationSteps().length}
                           </div>
                           
                           {/* Step Timer */}
                           <div className="text-center mb-4">
-                            <div className="text-3xl font-bold text-purple-700">
+                            <div className="text-3xl font-bold text-primary">
                               {stepTimeLeft}s
                             </div>
-                            <p className="text-sm text-purple-600">Time left in this step</p>
+                            <p className="text-sm text-primary/80">Time left in this step</p>
                           </div>
                           
-                          <p className="text-xl font-semibold text-purple-800 mb-4">
+                          <p className="text-xl font-semibold text-foreground mb-4">
                             {getMeditationSteps()[meditationStep]}
                           </p>
-                          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
-                            <Sparkles className="w-8 h-8 text-purple-600" />
+                          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+                            <Sparkles className="w-8 h-8 text-primary" />
                           </div>
                           <div className="text-sm text-muted-foreground mt-3">
                             <p>Take your time with each step. There's no rush.</p>
@@ -585,8 +588,8 @@ const MeditationPlayer = () => {
                      
                      {/* Session Type Info */}
                      {currentSession.type === "guided" && meditationStep >= getMeditationSteps().length && (
-                       <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                         <p className="text-sm text-blue-700">
+                       <div className="bg-primary/10 p-4 rounded-lg border border-primary/25">
+                         <p className="text-sm text-primary">
                            ✨ Guided portion complete. Continue meditating in silence.
                          </p>
                        </div>
@@ -600,7 +603,7 @@ const MeditationPlayer = () => {
                     variant="outline"
                     size="lg"
                     onClick={skipBackward}
-                    className="w-12 h-12 rounded-full"
+                    className="w-12 h-12 rounded-full border-serenity-calm/50 hover:bg-primary/10 hover:border-primary"
                   >
                     <SkipBack className="w-5 h-5" />
                   </Button>
@@ -608,7 +611,7 @@ const MeditationPlayer = () => {
                   <Button
                     size="lg"
                     onClick={togglePlayPause}
-                    className="w-16 h-16 rounded-full"
+                    className="w-16 h-16 rounded-full btn-primary-enhanced"
                   >
                     {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8" />}
                   </Button>
@@ -617,7 +620,7 @@ const MeditationPlayer = () => {
                     variant="outline"
                     size="lg"
                     onClick={skipForward}
-                    className="w-12 h-12 rounded-full"
+                    className="w-12 h-12 rounded-full border-serenity-calm/50 hover:bg-primary/10 hover:border-primary"
                   >
                     <SkipForward className="w-5 h-5" />
                   </Button>
@@ -629,6 +632,7 @@ const MeditationPlayer = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsMuted(!isMuted)}
+                    className="hover:bg-primary/10"
                   >
                     {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                   </Button>
@@ -655,7 +659,7 @@ const MeditationPlayer = () => {
               </CardContent>
             </Card>
           ) : (
-            <Card className="p-12 text-center">
+            <Card className="p-12 text-center card-elevated bg-card/85 border-serenity-calm/35">
               <div className="text-muted-foreground">
                 <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <h3 className="text-xl font-semibold mb-2">No Active Session</h3>
@@ -664,6 +668,7 @@ const MeditationPlayer = () => {
             </Card>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

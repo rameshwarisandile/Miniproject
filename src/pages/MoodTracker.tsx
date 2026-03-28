@@ -118,34 +118,36 @@ const MoodTracker = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Current Mood Entry */}
-        <Card className="mb-8 shadow-serenity animate-fade-in">
+        <Card className="card-elevated mb-8 shadow-serenity-lg animate-fade-in">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-2xl">
-              <Heart className="w-6 h-6 text-primary" />
-              <span>How are you feeling right now?</span>
+            <CardTitle className="flex items-center space-x-3 text-3xl font-bold">
+              <div className="p-2 bg-serenity-gradient rounded-lg">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-gradient-primary">How are you feeling?</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base mt-3">
               Take a moment to check in with yourself. Your feelings are valid and tracking them helps you understand your patterns.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-8">
             {/* Mood Selection */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-foreground">Select your mood:</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <label className="label-enhanced mb-5 block">Select Your Mood</label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {moodOptions.map((mood) => (
                   <Button
                     key={mood.name}
                     variant={selectedMood === mood.name ? "default" : "outline"}
-                    className={`h-20 flex-col space-y-1 transition-all duration-300 ${
+                    className={`h-24 flex-col space-y-2 transition-all duration-300 border-2 font-semibold ${
                       selectedMood === mood.name
-                        ? "bg-primary text-primary-foreground shadow-serenity"
-                        : mood.color
+                        ? "bg-primary text-primary-foreground shadow-serenity-lg scale-105"
+                        : mood.color + " hover:border-primary"
                     }`}
                     onClick={() => setSelectedMood(mood.name)}
                   >
-                    <span className="text-2xl">{mood.emoji}</span>
-                    <span className="text-sm font-medium">{mood.name}</span>
+                    <span className="text-3xl">{mood.emoji}</span>
+                    <span className="text-xs font-semibold">{mood.name}</span>
                   </Button>
                 ))}
               </div>
@@ -153,54 +155,52 @@ const MoodTracker = () => {
 
             {/* Intensity Scale */}
             {selectedMood && (
-              <div className="animate-slide-up">
-                <h3 className="text-lg font-semibold mb-4 text-foreground">
-                  How intense is this feeling? ({intensity}/10)
-                </h3>
+              <div className="animate-slide-up space-y-4 p-6 bg-serenity-soft/50 rounded-xl border border-serenity-calm/30">
+                <div>
+                  <h3 className="label-enhanced mb-4 flex justify-between">
+                    <span>Intensity Level</span>
+                    <span className="text-primary text-lg font-bold">{intensity}/10</span>
+                  </h3>
+                </div>
                 <div className="flex items-center space-x-4">
-                  <span className="text-sm text-muted-foreground">Low</span>
+                  <span className="text-xs font-semibold text-muted-foreground">MILD</span>
                   <input
                     type="range"
                     min="1"
                     max="10"
                     value={intensity}
                     onChange={(e) => setIntensity(parseInt(e.target.value))}
-                    className="flex-1 h-2 bg-serenity-calm rounded-lg appearance-none cursor-pointer slider"
+                    className="flex-1 h-2 bg-gradient-to-r from-serenity-calm to-primary rounded-lg appearance-none cursor-pointer slider"
                   />
-                  <span className="text-sm text-muted-foreground">High</span>
-                </div>
-                <div className="text-center mt-2">
-                  <span className="text-2xl font-bold text-primary">{intensity}</span>
+                  <span className="text-xs font-semibold text-muted-foreground">INTENSE</span>
                 </div>
               </div>
             )}
 
             {/* Notes */}
             {selectedMood && (
-              <div className="animate-slide-up delay-100">
-                <h3 className="text-lg font-semibold mb-4 text-foreground">
-                  What's on your mind? (optional)
-                </h3>
+              <div className="animate-slide-up delay-100 space-y-3">
+                <label className="label-enhanced block">What's On Your Mind?</label>
                 <Textarea
-                  placeholder="Describe what you're feeling, what triggered this mood, or anything else you'd like to remember..."
+                  placeholder="Describe what you're feeling, what triggered this mood, or anything else you'd like to remember... (optional)"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={4}
-                  className="transition-all duration-300 focus:shadow-serenity"
+                  className="input-focus-glow rounded-xl p-4 bg-background border-2 border-serenity-calm/30 transition-all duration-300"
                 />
               </div>
             )}
 
             {/* Save Button */}
             {selectedMood && (
-              <div className="flex justify-center animate-slide-up delay-200">
+              <div className="flex justify-center animate-slide-up delay-200 pt-4">
                 <Button 
                   onClick={handleSave}
                   size="lg"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 flex items-center space-x-2 transition-all duration-300 hover:shadow-serenity"
+                  className="btn-primary-enhanced px-12 py-3 rounded-xl flex items-center space-x-3 text-base font-semibold"
                 >
                   <Save className="w-5 h-5" />
-                  <span>Save Mood Entry</span>
+                  <span>Save Entry</span>
                 </Button>
               </div>
             )}
@@ -209,37 +209,42 @@ const MoodTracker = () => {
 
         {/* Recent Entries */}
         {entries.length > 0 && (
-          <Card className="animate-slide-up delay-300">
+          <Card className="card-elevated animate-slide-up delay-300">
             <CardHeader>
-              <CardTitle>Your Recent Moods</CardTitle>
-              <CardDescription>
-                Track your emotional patterns over time
+              <CardTitle className="text-2xl font-bold text-gradient-primary">Recent Mood History</CardTitle>
+              <CardDescription className="text-base">
+                Track your emotional patterns and discover your wellness trends
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {entries.slice(0, 10).map((entry) => {
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                {entries.slice(0, 10).map((entry, idx) => {
                   const moodOption = moodOptions.find(m => m.name === entry.mood);
                   return (
                     <div
                       key={entry.id}
-                      className="flex items-center space-x-4 p-4 rounded-lg bg-serenity-soft/50 border border-serenity-calm/20"
+                      className="group p-4 rounded-xl bg-gradient-to-r from-serenity-soft/70 to-serenity-soft/30 border border-serenity-calm/40 hover:border-primary/50 transition-all duration-300 hover:shadow-serenity-md"
+                      style={{ animationDelay: `${idx * 50}ms` }}
                     >
-                      <span className="text-2xl">{moodOption?.emoji}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <span className="font-medium text-foreground">{entry.mood}</span>
-                          <span className="text-sm text-muted-foreground">
-                            Intensity: {entry.intensity}/10
-                          </span>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="text-3xl mt-1">{moodOption?.emoji}</div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-bold text-lg text-foreground">{entry.mood}</span>
+                              <span className="text-xs font-semibold px-2 py-1 rounded-full bg-primary/20 text-primary">
+                                {entry.intensity}/10
+                              </span>
+                            </div>
+                            {entry.note && (
+                              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{entry.note}</p>
+                            )}
+                          </div>
                         </div>
-                        {entry.note && (
-                          <p className="text-sm text-muted-foreground">{entry.note}</p>
-                        )}
+                        <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
+                          {formatDate(entry.date)}
+                        </span>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {formatDate(entry.date)}
-                      </span>
                     </div>
                   );
                 })}

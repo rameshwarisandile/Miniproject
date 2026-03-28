@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Check } from "lucide-react";
+import { Eye, EyeOff, Check, Heart } from "lucide-react";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -121,36 +121,47 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
-      <Card className="w-full max-w-md shadow-serenity animate-fade-in bg-card border-border/50">
-        <CardHeader className="text-center space-y-4">
-          <CardTitle className="text-3xl font-bold bg-serenity-gradient bg-clip-text text-transparent">
+    <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft flex items-center justify-center px-4 py-8">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-serenity-gradient opacity-5 rounded-full blur-3xl -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-serenity-gradient opacity-5 rounded-full blur-3xl -z-10"></div>
+      
+      <Card className="w-full max-w-md card-elevated animate-fade-in">
+        <CardHeader className="text-center space-y-2 pb-8">
+          <div className="inline-flex justify-center mb-4">
+            <div className="w-16 h-16 bg-serenity-gradient rounded-2xl flex items-center justify-center shadow-serenity-lg">
+              <Heart className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-4xl font-bold text-gradient-primary">
             Join Serenity
           </CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Create your account to start your mental wellness journey
+          <CardDescription className="text-base text-muted-foreground">
+            Start your mental wellness journey today
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSignup} className="space-y-6">
+          <form onSubmit={handleSignup} className="space-y-4">
             {error && (
-              <div className="text-red-500 text-sm mb-2">{error}</div>
+              <div className="p-3 rounded-lg bg-destructive/20 border border-destructive/50 text-destructive/90 text-sm font-medium animate-shake">
+                {error}
+              </div>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-card-foreground">Full Name</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="name" className="label-enhanced">Full Name</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Your name"
+                placeholder="Your full name"
                 value={formData.name}
                 onChange={(e) => updateFormData("name", e.target.value)}
                 required
-                className="bg-input border-border text-foreground transition-all duration-300 focus:shadow-serenity focus:border-primary"
+                className="input-focus-glow bg-background border-2 border-serenity-calm/30 rounded-lg px-4 py-2.5 text-foreground transition-all duration-300"
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-card-foreground">Email</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="email" className="label-enhanced">Email Address</Label>
               <Input
                 id="email"
                 type="email"
@@ -158,12 +169,12 @@ const Signup = () => {
                 value={formData.email}
                 onChange={(e) => updateFormData("email", e.target.value)}
                 required
-                className="bg-input border-border text-foreground transition-all duration-300 focus:shadow-serenity focus:border-primary"
+                className="input-focus-glow bg-background border-2 border-serenity-calm/30 rounded-lg px-4 py-2.5 text-foreground transition-all duration-300"
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-card-foreground">Password</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="password" className="label-enhanced">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -172,13 +183,13 @@ const Signup = () => {
                   value={formData.password}
                   onChange={(e) => updateFormData("password", e.target.value)}
                   required
-                  className="pr-12 bg-input border-border text-foreground transition-all duration-300 focus:shadow-serenity focus:border-primary"
+                  className="input-focus-glow bg-background border-2 border-serenity-calm/30 rounded-lg px-4 py-2.5 pr-12 text-foreground transition-all duration-300"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1 text-muted-foreground hover:text-foreground"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1 text-muted-foreground hover:text-primary transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -186,8 +197,8 @@ const Signup = () => {
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-card-foreground">Confirm Password</Label>
+            <div className="space-y-2.5">
+              <Label htmlFor="confirmPassword" className="label-enhanced">Confirm Password</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -196,46 +207,67 @@ const Signup = () => {
                   value={formData.confirmPassword}
                   onChange={(e) => updateFormData("confirmPassword", e.target.value)}
                   required
-                  className="bg-input border-border text-foreground transition-all duration-300 focus:shadow-serenity focus:border-primary"
+                  className="input-focus-glow bg-background border-2 border-serenity-calm/30 rounded-lg px-4 py-2.5 text-foreground transition-all duration-300"
                 />
                 {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary font-bold" />
                 )}
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="profileImage" className="text-card-foreground">Profile Image (optional)</Label>
-              <Input
-                id="profileImage"
-                type="file"
-                accept="image/png, image/jpeg, image/jpg"
-                onChange={handleImageChange}
-                className="bg-input border-border text-foreground"
-              />
+            <div className="space-y-2.5">
+              <Label htmlFor="profileImage" className="label-enhanced">Profile Picture (Optional)</Label>
+              <div className="relative">
+                <Input
+                  id="profileImage"
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg"
+                  onChange={handleImageChange}
+                  className="input-focus-glow bg-background border-2 border-serenity-calm/30 rounded-lg px-4 py-2.5 text-foreground transition-all duration-300 cursor-pointer"
+                />
+              </div>
               {formData.profileImage && (
-                <img src={formData.profileImage} alt="Preview" className="w-16 h-16 rounded-full object-cover mt-2 mx-auto border" />
+                <div className="mt-3 flex justify-center">
+                  <img src={formData.profileImage} alt="Preview" className="w-20 h-20 rounded-full object-cover border-2 border-primary/50 shadow-serenity-md" />
+                </div>
               )}
             </div>
+            
             <Button
               type="submit"
-              className="w-full bg-serenity-gradient hover:opacity-90 text-white border-0 transition-all duration-300 hover:shadow-serenity hover:scale-105"
+              className="w-full btn-primary-enhanced py-2.5 rounded-lg text-base font-semibold mt-6"
             >
               Create Account
             </Button>
           </form>
           
-          <div className="mt-6 text-center space-y-4">
-            <p className="text-xs text-muted-foreground">
-              By signing up, you agree to our Terms of Service and Privacy Policy
+          <div className="mt-8 space-y-4">
+            <p className="text-xs text-center text-muted-foreground">
+              By creating an account, you agree to our{" "}
+              <span className="text-primary hover:underline cursor-pointer font-medium">Terms of Service</span> and{" "}
+              <span className="text-primary hover:underline cursor-pointer font-medium">Privacy Policy</span>
             </p>
-            <p className="text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link to="/login" className="text-primary hover:underline font-medium">
-                Sign in here
-              </Link>
-            </p>
-            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-serenity-calm/30"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-card text-muted-foreground">Already have an account?</span>
+              </div>
+            </div>
+            
+            <Link to="/login" className="block">
+              <Button 
+                type="button"
+                variant="outline"
+                className="w-full py-2.5 rounded-lg border-2 border-serenity-calm/50 hover:border-primary hover:bg-primary/10 transition-all duration-300 font-semibold"
+              >
+                Sign In Instead
+              </Button>
+            </Link>
+            
+            <Link to="/" className="block text-center text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
               ← Back to home
             </Link>
           </div>
