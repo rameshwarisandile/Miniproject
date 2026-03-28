@@ -13,6 +13,8 @@ interface JournalEntry {
   gratitude: string[];
   reflection: string;
   mood: string;
+  sleepQuality: "excellent" | "good" | "fair" | "poor" | "";
+  sleepHours: number | null;
   goals: Goal[];
 }
 
@@ -41,6 +43,8 @@ const WellnessJournal = () => {
     gratitude: [],
     reflection: "",
     mood: "",
+    sleepQuality: "",
+    sleepHours: null,
     goals: []
   });
   const [newGratitude, setNewGratitude] = useState("");
@@ -186,6 +190,8 @@ const WellnessJournal = () => {
       gratitude: [],
       reflection: "",
       mood: "",
+      sleepQuality: "",
+      sleepHours: null,
       goals: []
     });
     calculateStreak();
@@ -361,6 +367,40 @@ const WellnessJournal = () => {
                 />
               </div>
 
+              {/* Sleep Tracking */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">How was your sleep?</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                  {(["excellent", "good", "fair", "poor"] as const).map((quality) => (
+                    <Button
+                      key={quality}
+                      type="button"
+                      variant={currentEntry.sleepQuality === quality ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentEntry(prev => ({ ...prev, sleepQuality: quality }))}
+                      className="capitalize"
+                    >
+                      {quality}
+                    </Button>
+                  ))}
+                </div>
+                <Input
+                  type="number"
+                  min={0}
+                  max={24}
+                  step={0.5}
+                  value={currentEntry.sleepHours ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setCurrentEntry(prev => ({
+                      ...prev,
+                      sleepHours: value === "" ? null : Number(value)
+                    }));
+                  }}
+                  placeholder="Hours slept (optional, e.g. 7.5)"
+                />
+              </div>
+
               {/* Goals */}
               <div>
                 <label className="text-sm font-medium mb-2 block">Wellness Goals</label>
@@ -435,6 +475,23 @@ const WellnessJournal = () => {
                       )}
                       {entry.reflection && (
                         <p className="text-sm mb-2">{entry.reflection}</p>
+                      )}
+                      {(entry.sleepQuality || entry.sleepHours !== null) && (
+                        <div className="mb-2">
+                          <p className="text-sm text-muted-foreground">Sleep:</p>
+                          <div className="flex flex-wrap gap-1 items-center">
+                            {entry.sleepQuality && (
+                              <Badge variant="outline" className="text-xs capitalize">
+                                Quality: {entry.sleepQuality}
+                              </Badge>
+                            )}
+                            {entry.sleepHours !== null && (
+                              <Badge variant="outline" className="text-xs">
+                                {entry.sleepHours}h
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       )}
                       {entry.goals.length > 0 && (
                         <div>

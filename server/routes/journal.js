@@ -10,6 +10,8 @@ const journalSchema = new mongoose.Schema({
   gratitude: [String],
   reflection: String,
   mood: String,
+  sleepQuality: { type: String, enum: ["excellent", "good", "fair", "poor", ""] },
+  sleepHours: { type: Number, min: 0, max: 24 },
   goals: [
     {
       id: String,
