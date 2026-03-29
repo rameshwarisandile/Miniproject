@@ -63,34 +63,6 @@ Mood Nest is a full-stack mental wellness platform where users can track emotion
 
 ---
 
-## 🚀 Run Locally
-
-### Frontend
-1. Install dependencies (project root).
-2. Start frontend:
-
-```bash
-npm run dev
-```
-
-### Backend
-1. Open `server` folder.
-2. Install dependencies.
-3. Add `.env` values:
-   - `MONGO_URI`
-   - `JWT_SECRET`
-   - `KEY` (Gemini API key)
-   - `PORT`
-4. Start server:
-
-```bash
-npm run dev
-# or
-npm start
-```
-
----
-
 ## 🔗 Repository
 
 https://github.com/rameshwarisandile/Miniproject.git
