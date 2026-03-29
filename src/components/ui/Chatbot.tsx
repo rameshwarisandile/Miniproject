@@ -285,7 +285,7 @@ const Chatbot: React.FC = () => {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-5 w-14 h-14 rounded-full btn-primary-enhanced text-white shadow-serenity-lg z-[90]"
+        className="chatbot-dock-button w-14 h-14 rounded-full btn-primary-enhanced text-white shadow-serenity-lg z-[90]"
       >
         <Bot className="w-6 h-6" />
       </Button>
@@ -293,7 +293,9 @@ const Chatbot: React.FC = () => {
   }
 
   return (
-    <Card className="fixed bottom-6 right-3 sm:right-5 md:right-6 w-[min(34rem,calc(100vw-1.5rem))] h-[min(76vh,680px)] min-h-[560px] shadow-serenity-lg flex flex-col rounded-2xl border border-serenity-calm/35 bg-card/95 backdrop-blur-md z-[85] overflow-hidden">
+    <Card
+      className="chatbot-dock-panel w-[min(34rem,calc(100vw-1rem))] h-[min(78dvh,680px)] max-h-[calc(100dvh-6rem)] min-h-[360px] shadow-serenity-lg flex flex-col rounded-2xl border border-serenity-calm/35 bg-card/95 backdrop-blur-md z-[85] overflow-hidden"
+    >
       <CardHeader className="bg-serenity-gradient text-white p-5 rounded-none flex flex-col border-b border-white/10">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">

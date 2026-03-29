@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Calendar, Plus, Target, Trophy, Heart, Star, BookOpen, CheckCircle } from "lucide-react";
+import FeatureNavbar from "@/components/ui/FeatureNavbar";
 
 interface JournalEntry {
   id: string;
@@ -270,29 +271,24 @@ const WellnessJournal = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Dashboard Back Button - Main Section */}
-      <div className="mb-4">
-        <a href="/dashboard">
-          <button className="flex items-center space-x-2 bg-transparent hover:bg-[#d946ef] active:bg-[#a21caf] text-[#d946ef] hover:text-white active:text-white font-bold rounded-xl px-6 py-3 shadow transition-all" style={{border: 'none'}}>
-            <span className="mr-2" style={{display: 'inline-block'}}>&#8592;</span>
-            <span>Dashboard</span>
-          </button>
-        </a>
-      </div>
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft relative">
+      <FeatureNavbar featureName="📝 Wellness Journal" />
+      <div className="pointer-events-none absolute top-8 -left-16 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-16 -right-16 w-72 h-72 rounded-full bg-pink-500/10 blur-3xl" />
+      <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
+      <div className="mb-8 page-hero-shell text-center">
+        <h1 className="page-hero-title mb-4 text-gradient-primary">
           Wellness Journal
         </h1>
-        <p className="text-xl text-muted-foreground">
+        <p className="page-hero-subtitle">
           Reflect, grow, and celebrate your wellness journey
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Current Entry Form */}
         <div className="lg:col-span-2">
-          <Card className="mb-6">
+          <Card className="mb-6 card-elevated bg-card/85 border-serenity-calm/35 shadow-serenity-md">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <BookOpen className="w-5 h-5" />
@@ -303,15 +299,19 @@ const WellnessJournal = () => {
             <CardContent className="space-y-6">
               {/* Mood Selection */}
               <div>
-                <label className="text-sm font-medium mb-2 block">How are you feeling today?</label>
-                <div className="grid grid-cols-4 gap-2">
+                <label className="label-enhanced mb-3 block">How are you feeling today?</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {["happy", "calm", "excited", "anxious", "sad", "angry", "tired", "grateful"].map((mood) => (
                     <Button
                       key={mood}
                       variant={currentEntry.mood === mood ? "default" : "outline"}
                       size="sm"
                       onClick={() => setCurrentEntry(prev => ({ ...prev, mood }))}
-                      className="flex flex-col items-center space-y-1 h-20"
+                      className={`flex flex-col items-center space-y-1 h-20 sm:h-24 border-2 transition-all duration-300 ${
+                        currentEntry.mood === mood
+                          ? "bg-primary text-primary-foreground border-primary shadow-serenity-md"
+                          : "border-serenity-calm/35 bg-card/60 hover:border-primary/60"
+                      }`}
                     >
                       <span className="text-2xl">{getMoodEmoji(mood)}</span>
                       <span className="text-xs capitalize">{mood}</span>
@@ -322,12 +322,12 @@ const WellnessJournal = () => {
 
               {/* Gratitude Section */}
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="label-enhanced mb-3 block">
                   What are you grateful for today? ({currentEntry.gratitude.length}/3)
                 </label>
                 <div className="space-y-2">
                   {currentEntry.gratitude.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-2">
+                    <div key={index} className="flex items-center space-x-2 p-2.5 rounded-lg border border-serenity-calm/25 bg-muted/40">
                       <Star className="w-4 h-4 text-yellow-500" />
                       <span className="flex-1">{item}</span>
                       <Button
@@ -341,14 +341,15 @@ const WellnessJournal = () => {
                     </div>
                   ))}
                   {currentEntry.gratitude.length < 3 && (
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Input
                         value={newGratitude}
                         onChange={(e) => setNewGratitude(e.target.value)}
                         placeholder="Add something you're grateful for..."
                         onKeyPress={(e) => e.key === 'Enter' && addGratitude()}
+                        className="input-focus-glow border-serenity-calm/35 bg-card/80"
                       />
-                      <Button onClick={addGratitude} size="sm">
+                      <Button onClick={addGratitude} size="sm" className="btn-primary-enhanced sm:w-auto w-full">
                         <Plus className="w-4 h-4" />
                       </Button>
                     </div>
@@ -358,18 +359,19 @@ const WellnessJournal = () => {
 
               {/* Reflection */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Reflection (optional)</label>
+                <label className="label-enhanced mb-3 block">Reflection (optional)</label>
                 <Textarea
                   value={currentEntry.reflection}
                   onChange={(e) => setCurrentEntry(prev => ({ ...prev, reflection: e.target.value }))}
                   placeholder="How was your day? What did you learn? What would you like to improve?"
                   rows={3}
+                  className="input-focus-glow border-serenity-calm/35 bg-card/80"
                 />
               </div>
 
               {/* Sleep Tracking */}
               <div>
-                <label className="text-sm font-medium mb-2 block">How was your sleep?</label>
+                <label className="label-enhanced mb-3 block">How was your sleep?</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
                   {(["excellent", "good", "fair", "poor"] as const).map((quality) => (
                     <Button
@@ -378,7 +380,11 @@ const WellnessJournal = () => {
                       variant={currentEntry.sleepQuality === quality ? "default" : "outline"}
                       size="sm"
                       onClick={() => setCurrentEntry(prev => ({ ...prev, sleepQuality: quality }))}
-                      className="capitalize"
+                      className={`capitalize border-2 ${
+                        currentEntry.sleepQuality === quality
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-serenity-calm/35 bg-card/60 hover:border-primary/60"
+                      }`}
                     >
                       {quality}
                     </Button>
@@ -398,15 +404,16 @@ const WellnessJournal = () => {
                     }));
                   }}
                   placeholder="Hours slept (optional, e.g. 7.5)"
+                  className="input-focus-glow border-serenity-calm/35 bg-card/80"
                 />
               </div>
 
               {/* Goals */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Wellness Goals</label>
+                <label className="label-enhanced mb-3 block">Wellness Goals</label>
                 <div className="space-y-2">
                   {currentEntry.goals.map((goal) => (
-                    <div key={goal.id} className="flex items-center space-x-2">
+                    <div key={goal.id} className="flex items-center space-x-2 p-2.5 rounded-lg border border-serenity-calm/25 bg-muted/40">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -420,30 +427,31 @@ const WellnessJournal = () => {
                       </span>
                     </div>
                   ))}
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Input
                       value={newGoal}
                       onChange={(e) => setNewGoal(e.target.value)}
                       placeholder="Add a wellness goal..."
                       onKeyPress={(e) => e.key === 'Enter' && addGoal()}
+                      className="input-focus-glow border-serenity-calm/35 bg-card/80"
                     />
-                    <Button onClick={addGoal} size="sm">
+                    <Button onClick={addGoal} size="sm" className="btn-primary-enhanced sm:w-auto w-full">
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
               </div>
 
-              <Button onClick={saveEntry} className="w-full" size="lg">
+              <Button onClick={saveEntry} className="w-full btn-primary-enhanced" size="lg">
                 Save Entry
               </Button>
             </CardContent>
           </Card>
 
           {/* Previous Entries */}
-          <Card>
+          <Card className="card-elevated bg-card/85 border-serenity-calm/35 shadow-serenity-md">
             <CardHeader>
-              <CardTitle>Previous Entries</CardTitle>
+              <CardTitle className="text-gradient-primary">Previous Entries</CardTitle>
             </CardHeader>
             <CardContent>
               {entries.length === 0 ? (
@@ -453,13 +461,13 @@ const WellnessJournal = () => {
               ) : (
                 <div className="space-y-4">
                   {entries.slice(0, 5).map((entry) => (
-                    <div key={entry.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
+                    <div key={entry.id} className="border border-serenity-calm/35 bg-card/70 rounded-lg p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                         <div className="flex items-center space-x-2">
                           <span className="text-2xl">{getMoodEmoji(entry.mood)}</span>
                           <span className="font-medium capitalize">{entry.mood}</span>
                         </div>
-                        <span className="text-sm text-muted-foreground">{formatDate(entry.date)}</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground">{formatDate(entry.date)}</span>
                       </div>
                       {entry.gratitude.length > 0 && (
                         <div className="mb-2">
@@ -522,7 +530,7 @@ const WellnessJournal = () => {
           {/* Dashboard Back Button - Sidebar */}
           {/* Removed duplicate dashboard back button from sidebar */}
           {/* Streak Card */}
-          <Card>
+          <Card className="card-elevated bg-card/85 border-serenity-calm/35 shadow-serenity-md">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Heart className="w-5 h-5 text-red-500" />
@@ -538,7 +546,7 @@ const WellnessJournal = () => {
           </Card>
 
           {/* Stats Card */}
-          <Card>
+          <Card className="card-elevated bg-card/85 border-serenity-calm/35 shadow-serenity-md">
             <CardHeader>
               <CardTitle>Your Stats</CardTitle>
             </CardHeader>
@@ -563,7 +571,7 @@ const WellnessJournal = () => {
           </Card>
 
           {/* Achievements Card */}
-          <Card>
+          <Card className="card-elevated bg-card/85 border-serenity-calm/35 shadow-serenity-md">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Trophy className="w-5 h-5 text-yellow-500" />
@@ -578,7 +586,7 @@ const WellnessJournal = () => {
               ) : (
                 <div className="space-y-3">
                   {achievements.map((achievement) => (
-                    <div key={achievement.id} className="flex items-center space-x-3 p-2 bg-yellow-50 rounded-lg">
+                    <div key={achievement.id} className="flex items-center space-x-3 p-2.5 bg-muted/45 border border-serenity-calm/25 rounded-lg">
                       <span className="text-2xl">{achievement.icon}</span>
                       <div className="flex-1">
                         <p className="font-medium text-sm">{achievement.title}</p>
@@ -591,6 +599,7 @@ const WellnessJournal = () => {
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   );

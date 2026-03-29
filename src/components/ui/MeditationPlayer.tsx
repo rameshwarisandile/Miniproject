@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Timer, Heart, Sparkles } from "lucide-react";
+import FeatureNavbar from "@/components/ui/FeatureNavbar";
 
 interface MeditationSession {
   id: string;
@@ -300,13 +301,13 @@ const MeditationPlayer = () => {
   const getBreathingInstructions = () => {
     switch (breathingPhase) {
       case "inhale":
-        return { text: "Breathe In", color: "text-blue-600", bgColor: "bg-blue-100" };
+        return { text: "Breathe In", color: "text-cyan-300", bgColor: "bg-cyan-400/15 border border-cyan-300/30" };
       case "hold":
-        return { text: "Hold", color: "text-purple-600", bgColor: "bg-purple-100" };
+        return { text: "Hold", color: "text-violet-300", bgColor: "bg-violet-400/15 border border-violet-300/30" };
       case "exhale":
-        return { text: "Breathe Out", color: "text-green-600", bgColor: "bg-green-100" };
+        return { text: "Breathe Out", color: "text-emerald-300", bgColor: "bg-emerald-400/15 border border-emerald-300/30" };
       default:
-        return { text: "Ready", color: "text-gray-600", bgColor: "bg-gray-100" };
+        return { text: "Ready", color: "text-slate-300", bgColor: "bg-muted/50 border border-serenity-calm/40" };
     }
   };
   
@@ -368,31 +369,26 @@ const MeditationPlayer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft relative overflow-hidden meditation-static-ui">
+    <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft relative meditation-static-ui">
+      <FeatureNavbar featureName="🧘 Meditation & Breathing" />
       <div className="pointer-events-none absolute top-8 -left-16 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute bottom-16 -right-16 w-72 h-72 rounded-full bg-pink-500/10 blur-3xl" />
       <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-       {/* Dashboard Back Button */}
-      <div className="mb-4">
-        <a href="/dashboard">
-          <button className="flex items-center space-x-2 bg-transparent hover:bg-[#d946ef] active:bg-[#a21caf] text-[#d946ef] hover:text-white active:text-white font-bold rounded-xl px-6 py-3 shadow transition-all" style={{border: 'none'}}>
-            <span className="mr-2" style={{display: 'inline-block'}}>&#8592;</span>
-            <span>Dashboard</span>
-          </button>
-        </a>
-      </div>
-      <div className="text-center mb-10">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gradient-primary">
-          Meditation & Wellness
-        </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Take a moment to breathe, reflect, and find your center
-        </p>
+
+      <div className="mb-10 page-hero-shell">
+        <div className="text-center">
+          <h1 className="page-hero-title mb-4 text-gradient-primary">
+            Meditation & Wellness
+          </h1>
+          <p className="page-hero-subtitle max-w-2xl mx-auto">
+            Take a moment to breathe, reflect, and find your center
+          </p>
+        </div>
       </div>
 
       <div className="grid xl:grid-cols-2 gap-8 xl:gap-10 items-start">
                  {/* Session List */}
-         <div className="space-y-4 xl:sticky xl:top-24">
+         <div className="space-y-4 xl:sticky xl:top-24 rounded-3xl border border-serenity-calm/30 bg-card/55 backdrop-blur-sm p-5 md:p-6 shadow-serenity-md">
            <div className="flex items-center justify-between mb-4">
              <h2 className="text-2xl font-semibold text-foreground">Available Sessions</h2>
              <Button
@@ -465,7 +461,7 @@ const MeditationPlayer = () => {
           {meditationSessions.map((session) => (
             <Card 
               key={session.id} 
-              className="card-elevated bg-card/85 hover:shadow-serenity-lg cursor-pointer"
+              className="card-elevated bg-card/90 border-serenity-calm/35 cursor-pointer"
               onClick={() => startSession(session)}
             >
               <CardHeader className="pb-3">
@@ -485,11 +481,11 @@ const MeditationPlayer = () => {
         </div>
 
         {/* Player */}
-        <div className="space-y-6">
+        <div className="space-y-6 rounded-3xl border border-serenity-calm/30 bg-card/55 backdrop-blur-sm p-5 md:p-6 shadow-serenity-md">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">Current Session</h2>
           
           {currentSession ? (
-            <Card className="p-6 card-elevated bg-card/90 border-serenity-calm/35">
+            <Card className="p-6 card-elevated bg-card/95 border-serenity-calm/35">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-2xl mb-2">{currentSession.title}</CardTitle>
                 <p className="text-muted-foreground">{currentSession.description}</p>
@@ -499,7 +495,7 @@ const MeditationPlayer = () => {
                 {/* Breathing Exercise Display */}
                 {currentSession.type === "breathing" && (
                   <div className="text-center">
-                    <div className={`w-32 h-32 mx-auto rounded-full flex items-center justify-center text-2xl font-bold mb-4 ${
+                    <div className={`w-36 h-36 mx-auto rounded-full flex items-center justify-center text-2xl font-bold mb-4 shadow-serenity-md ${
                       getBreathingInstructions().bgColor
                     }`}>
                       <span className={getBreathingInstructions().color}>
@@ -529,9 +525,9 @@ const MeditationPlayer = () => {
                        <div className="text-center">
                          <p className="text-xs font-medium text-primary mb-1">Current Phase:</p>
                          <div className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                           breathingPhase === "inhale" ? "bg-blue-100 text-blue-700" :
-                           breathingPhase === "hold" ? "bg-purple-100 text-purple-700" :
-                           "bg-green-100 text-green-700"
+                           breathingPhase === "inhale" ? "bg-cyan-500/20 text-cyan-200 border border-cyan-300/35" :
+                           breathingPhase === "hold" ? "bg-violet-500/20 text-violet-200 border border-violet-300/35" :
+                           "bg-emerald-500/20 text-emerald-200 border border-emerald-300/35"
                          }`}>
                            {breathingPhase === "inhale" ? "🫁 Inhale" : 
                             breathingPhase === "hold" ? "⏸️ Hold" : 
@@ -659,7 +655,7 @@ const MeditationPlayer = () => {
               </CardContent>
             </Card>
           ) : (
-            <Card className="p-12 text-center card-elevated bg-card/85 border-serenity-calm/35">
+            <Card className="p-12 text-center card-elevated bg-card/90 border-serenity-calm/35">
               <div className="text-muted-foreground">
                 <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <h3 className="text-xl font-semibold mb-2">No Active Session</h3>

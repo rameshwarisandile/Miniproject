@@ -674,3 +674,50 @@ All colors MUST be HSL.
 .dashboard-pulse-bar:nth-child(3n) {
   animation-delay: 0.32s;
 }
+
+/* Shared page header shell for wellness pages */
+.page-hero-shell {
+  border-radius: 1.5rem;
+  border: 1px solid hsl(280 50% 60% / 0.2);
+  background:
+    radial-gradient(circle at 16% 20%, hsl(280 70% 60% / 0.15), transparent 40%),
+    radial-gradient(circle at 84% 76%, hsl(320 60% 55% / 0.1), transparent 42%),
+    linear-gradient(130deg, hsl(220 20% 11% / 0.9), hsl(220 18% 9% / 0.9));
+  backdrop-filter: blur(8px);
+  box-shadow: 0 15px 40px hsl(280 70% 60% / 0.12);
+  padding: 2rem 1.5rem;
+}
+
+.page-hero-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.page-hero-subtitle {
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  color: hsl(220 15% 70%);
+}
+
+@media (min-width: 768px) {
+  .page-hero-shell {
+    padding: 2.25rem 2.5rem;
+  }
+}
+
+/* Chatbot dock positioning for mobile and laptop */
+.chatbot-dock-button,
+.chatbot-dock-panel {
+  position: fixed;
+  right: 0.75rem;
+  left: auto;
+  bottom: calc(5.75rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+  .chatbot-dock-button,
+  .chatbot-dock-panel {
+    right: 1.25rem;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  }
+}

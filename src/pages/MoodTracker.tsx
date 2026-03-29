@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Heart } from "lucide-react";
+import { Save, Heart, Lightbulb, Sparkles } from "lucide-react";
+import FeatureNavbar from "@/components/ui/FeatureNavbar";
 
 interface MoodEntry {
   id: string;
@@ -11,6 +11,7 @@ interface MoodEntry {
   intensity: number;
   note: string;
   date: string;
+  aiSuggestions?: string[];
 }
 
 const moodOptions = [
@@ -24,12 +25,114 @@ const moodOptions = [
   { name: "Grateful", emoji: "🙏", color: "bg-green-100 border-green-300 hover:bg-green-200" },
 ];
 
+const moodSuggestions: Record<string, string[]> = {
+  Happy: [
+    "Is positive moment ko journal me note karo taaki difficult days me read kar sako.",
+    "Aaj kisi ek person ko thank-you message bhejo.",
+    "Is energy ko use karke 10 minute walk ya light activity karo.",
+  ],
+  Calm: [
+    "2 minute deep breathing continue rakho to maintain this calm state.",
+    "Screen break lo aur pani piyo for better mental clarity.",
+    "Aaj ka ek small goal set karke complete karo for momentum.",
+  ],
+  Excited: [
+    "Excitement ko direction do: next 30 minutes ka mini-plan banao.",
+    "Apne idea ke 3 action steps likh lo before mood shifts.",
+    "Energy high hai, ek creative task pick karo.",
+  ],
+  Anxious: [
+    "5-4-3-2-1 grounding try karo: 5 cheeze dekho, 4 touch karo, 3 suno.",
+    "4 second inhale, 4 hold, 6 exhale - 6 rounds karo.",
+    "Jo worry hai usko likho aur ek next small action identify karo.",
+  ],
+  Sad: [
+    "Aaj bas one gentle task choose karo, full productivity pressure mat lo.",
+    "Sunlight ya fresh air me 10 minute spend karo.",
+    "Kisi trusted friend/family ko short message bhej do.",
+  ],
+  Angry: [
+    "React karne se pehle 90 seconds pause lo aur slow breathing karo.",
+    "Physical reset: 20 squats ya brisk walk for energy release.",
+    "Trigger likho: kya hua, kaisa feel hua, next better response kya hoga.",
+  ],
+  Tired: [
+    "Hydration + 5 minute stretch se quick refresh lo.",
+    "Aaj high-priority ke sirf 1-2 tasks karo.",
+    "Aaj raat sleep timing 30 min early rakhne ki planning karo.",
+  ],
+  Grateful: [
+    "Aaj ke gratitude points ko journal me 3 lines me likho.",
+    "Jis cheez ke liye grateful ho, us person ko appreciation bhejo.",
+    "Is feeling ko maintain karne ke liye ek mindful pause lo.",
+  ],
+};
+
 const MoodTracker = () => {
   const [selectedMood, setSelectedMood] = useState<string>("");
   const [intensity, setIntensity] = useState<number>(5);
   const [note, setNote] = useState<string>("");
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [aiLoading, setAiLoading] = useState<boolean>(false);
+  const [aiError, setAiError] = useState<string>("");
   const [entries, setEntries] = useState<MoodEntry[]>([]);
-  const navigate = useNavigate();
+  const [expandedSuggestionEntries, setExpandedSuggestionEntries] = useState<string[]>([]);
+
+  const getSuggestionsForMood = () => {
+    const selected = moodSuggestions[selectedMood] || [];
+    if (selectedMood === "Anxious" && intensity >= 8) {
+      return [
+        "Intensity high lag rahi hai. 2 minute slow breathing abhi karo.",
+        "Agar overwhelming feel ho raha hai, kisi trusted person ko call/text karo.",
+        ...selected,
+      ];
+    }
+    return selected;
+  };
+
+  const fetchAiSuggestions = async () => {
+    if (!selectedMood) return;
+
+    setAiLoading(true);
+    setAiError("");
+
+    try {
+      const prompt = `You are a compassionate mental wellness assistant. User mood: ${selectedMood}. Intensity: ${intensity}/10. Note: ${note || "No note provided"}. Provide 4 short, practical, safe suggestions in simple Hinglish. Keep each suggestion under 18 words. Avoid diagnosis and avoid harmful advice. Return as numbered list only.`;
+
+      const response = await fetch("/api/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: prompt }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch AI suggestions");
+      }
+
+      const data = await response.json();
+      const replyText = (data?.reply || "").toString();
+
+      const parsed = replyText
+        .split("\n")
+        .map((line: string) => line.replace(/^\s*(\d+[.)]|[-*])\s*/, "").trim())
+        .filter((line: string) => line.length > 0)
+        .slice(0, 4);
+
+      if (parsed.length === 0) {
+        setAiSuggestions(["AI se suggestions parse nahi ho paaye. Please try again."]);
+      } else {
+        setAiSuggestions(parsed);
+      }
+    } catch (error) {
+      setAiError("AI suggestions abhi unavailable hain. Please thodi der baad try karein.");
+      setAiSuggestions([]);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Load only current user's moods
@@ -54,6 +157,7 @@ const MoodTracker = () => {
       intensity,
       note,
       date: new Date().toISOString(),
+      aiSuggestions: aiSuggestions,
     };
     // LocalStorage: user-specific
     const loggedInUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
@@ -87,6 +191,9 @@ const MoodTracker = () => {
     setSelectedMood("");
     setIntensity(5);
     setNote("");
+    setShowSuggestions(false);
+    setAiSuggestions([]);
+    setAiError("");
     alert("Mood entry saved successfully!");
   };
 
@@ -101,22 +208,14 @@ const MoodTracker = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft">
-      {/* Header */}
-      <header className="bg-card/80 backdrop-blur-sm border-b border-serenity-calm/20 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center space-x-4">
-          <Link to="/dashboard">
-            <Button variant="ghost" size="sm" className="flex items-center space-x-2 bg-transparent hover:bg-[#d946ef] active:bg-[#a21caf] text-[#d946ef] hover:text-white active:text-white font-bold rounded-xl px-6 py-3 shadow transition-all" style={{border: 'none'}}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              <span>Dashboard</span>
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-bold bg-serenity-gradient bg-clip-text text-transparent">
-            Mood Tracker
-          </h1>
-        </div>
-      </header>
+      <FeatureNavbar featureName="😊 Mood Tracker" />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="mb-8 page-hero-shell text-center">
+          <h1 className="page-hero-title text-gradient-primary mb-3">Mood Tracker</h1>
+          <p className="page-hero-subtitle max-w-2xl mx-auto">Capture your daily emotions and understand your wellness patterns over time.</p>
+        </div>
+
         {/* Current Mood Entry */}
         <Card className="card-elevated mb-8 shadow-serenity-lg animate-fade-in">
           <CardHeader>
@@ -144,7 +243,12 @@ const MoodTracker = () => {
                         ? "bg-primary text-primary-foreground shadow-serenity-lg scale-105"
                         : mood.color + " hover:border-primary"
                     }`}
-                    onClick={() => setSelectedMood(mood.name)}
+                    onClick={() => {
+                      setSelectedMood(mood.name);
+                      setShowSuggestions(false);
+                      setAiSuggestions([]);
+                      setAiError("");
+                    }}
                   >
                     <span className="text-3xl">{mood.emoji}</span>
                     <span className="text-xs font-semibold">{mood.name}</span>
@@ -191,6 +295,71 @@ const MoodTracker = () => {
               </div>
             )}
 
+            {/* Suggestions */}
+            {selectedMood && (
+              <div className="animate-slide-up delay-150 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-serenity-calm/30 bg-serenity-soft/50 p-4">
+                  <div className="flex items-center gap-2">
+                    <Lightbulb className="w-5 h-5 text-primary" />
+                    <span className="font-semibold text-foreground">Need suggestions for this mood?</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowSuggestions((prev) => !prev)}
+                    className="border-primary/40 hover:border-primary"
+                  >
+                    {showSuggestions ? "Hide Suggestions" : "Show Suggestions"}
+                  </Button>
+                </div>
+
+                {showSuggestions && (
+                  <div className="rounded-xl border border-primary/25 bg-background/90 p-4">
+                    <h4 className="mb-3 text-sm font-bold text-primary">Suggestions for {selectedMood}</h4>
+                    <ul className="space-y-2">
+                      {getSuggestionsForMood().map((tip, idx) => (
+                        <li key={`${selectedMood}-tip-${idx}`} className="rounded-lg bg-serenity-soft/60 px-3 py-2 text-sm text-foreground">
+                          {tip}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="mt-4 border-t border-serenity-calm/30 pt-4">
+                      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                        <h5 className="flex items-center gap-2 text-sm font-bold text-primary">
+                          <Sparkles className="h-4 w-4" />
+                          AI Suggestions
+                        </h5>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={fetchAiSuggestions}
+                          disabled={aiLoading}
+                          className="px-4"
+                        >
+                          {aiLoading ? "Thinking..." : "Get AI Suggestions"}
+                        </Button>
+                      </div>
+
+                      {aiError && (
+                        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{aiError}</p>
+                      )}
+
+                      {aiSuggestions.length > 0 && (
+                        <ul className="mt-3 space-y-2">
+                          {aiSuggestions.map((tip, idx) => (
+                            <li key={`ai-tip-${idx}`} className="rounded-lg bg-primary/10 px-3 py-2 text-sm text-foreground">
+                              {tip}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Save Button */}
             {selectedMood && (
               <div className="flex justify-center animate-slide-up delay-200 pt-4">
@@ -220,6 +389,7 @@ const MoodTracker = () => {
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                 {entries.slice(0, 10).map((entry, idx) => {
                   const moodOption = moodOptions.find(m => m.name === entry.mood);
+                  const isExpanded = expandedSuggestionEntries.includes(entry.id);
                   return (
                     <div
                       key={entry.id}
@@ -238,6 +408,35 @@ const MoodTracker = () => {
                             </div>
                             {entry.note && (
                               <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{entry.note}</p>
+                            )}
+                            {entry.aiSuggestions && entry.aiSuggestions.length > 0 && (
+                              <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-primary">Saved AI Suggestions</p>
+                                <ul className="space-y-1.5">
+                                  {(isExpanded ? entry.aiSuggestions : entry.aiSuggestions.slice(0, 2)).map((tip, tipIndex) => (
+                                    <li key={`${entry.id}-ai-${tipIndex}`} className="text-xs text-foreground/90">
+                                      {tip}
+                                    </li>
+                                  ))}
+                                </ul>
+                                {entry.aiSuggestions.length > 2 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="mt-2 h-7 px-2 text-xs text-primary hover:text-primary"
+                                    onClick={() =>
+                                      setExpandedSuggestionEntries((prev) =>
+                                        prev.includes(entry.id)
+                                          ? prev.filter((id) => id !== entry.id)
+                                          : [...prev, entry.id],
+                                      )
+                                    }
+                                  >
+                                    {isExpanded ? "Show less" : `View all (${entry.aiSuggestions.length})`}
+                                  </Button>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp, Activity, Calendar, Target, BarChart3, PieChart, LineChart, Moon, Zap } from "lucide-react";
+import FeatureNavbar from "@/components/ui/FeatureNavbar";
 
 type TimeRange = "7d" | "30d" | "90d";
 
@@ -307,7 +308,7 @@ const WellnessAnalytics = () => {
               .filter((entry) => entry.sleepQuality || typeof entry.sleepHours === "number")
               .map((entry) => {
                 const hours = typeof entry.sleepHours === "number" ? entry.sleepHours : 0;
-                const quality = entry.sleepQuality && entry.sleepQuality !== "" ? entry.sleepQuality : sleepQualityFromHours(hours || 6.5);
+                const quality = entry.sleepQuality ? entry.sleepQuality : sleepQualityFromHours(hours || 6.5);
                 return {
                   date: entry.date,
                   hours: hours || 6.5,
@@ -342,7 +343,7 @@ const WellnessAnalytics = () => {
           .filter((entry: any) => entry.sleepQuality || typeof entry.sleepHours === "number")
           .map((entry: any) => {
             const hours = typeof entry.sleepHours === "number" ? entry.sleepHours : 0;
-            const quality = entry.sleepQuality && entry.sleepQuality !== "" ? entry.sleepQuality : sleepQualityFromHours(hours || 6.5);
+            const quality = entry.sleepQuality ? entry.sleepQuality : sleepQualityFromHours(hours || 6.5);
             return {
               date: entry.date,
               hours: hours || 6.5,
@@ -451,24 +452,23 @@ const WellnessAnalytics = () => {
   }, [currentScore, moodData, sleepData]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-4">
-        <a href="/dashboard">
-          <button className="flex items-center space-x-2 bg-transparent hover:bg-[#d946ef] active:bg-[#a21caf] text-[#d946ef] hover:text-white active:text-white font-bold rounded-xl px-6 py-3 shadow transition-all" style={{ border: "none" }}>
-            <span className="mr-2" style={{ display: "inline-block" }}>&#8592;</span>
-            <span>Dashboard</span>
-          </button>
-        </a>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft relative">
+      <FeatureNavbar featureName="📊 Wellness Analytics" />
+      <div className="pointer-events-none absolute top-4 -left-16 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-16 -right-12 w-72 h-72 rounded-full bg-pink-500/10 blur-3xl" />
 
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Wellness Analytics</h1>
-        <p className="text-xl text-muted-foreground">Track your progress and discover patterns in your wellness journey</p>
-      </div>
+      <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+
+        <div className="mb-8 page-hero-shell">
+          <div className="text-center">
+            <h1 className="page-hero-title mb-3 text-gradient-primary">Wellness Analytics</h1>
+            <p className="page-hero-subtitle">Track your progress and discover patterns in your wellness journey</p>
+          </div>
+        </div>
 
       <div className="flex justify-center mb-8">
         <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-52 border-2 border-primary/60 bg-card/90 rounded-xl text-base font-medium">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -480,7 +480,7 @@ const WellnessAnalytics = () => {
       </div>
 
       <div className="grid md:grid-cols-4 gap-6 mb-8">
-        <Card>
+        <Card className="card-elevated bg-card/85 border-serenity-calm/35">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
               <Activity className="w-4 h-4" />
@@ -493,7 +493,7 @@ const WellnessAnalytics = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-elevated bg-card/85 border-serenity-calm/35">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
               <TrendingUp className="w-4 h-4" />
@@ -506,7 +506,7 @@ const WellnessAnalytics = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-elevated bg-card/85 border-serenity-calm/35">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
               <Moon className="w-4 h-4" />
@@ -519,7 +519,7 @@ const WellnessAnalytics = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-elevated bg-card/85 border-serenity-calm/35">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center space-x-2">
               <Calendar className="w-4 h-4" />
@@ -534,7 +534,7 @@ const WellnessAnalytics = () => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8 mb-8">
-        <Card>
+        <Card className="card-elevated bg-card/85 border-serenity-calm/35">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <LineChart className="w-5 h-5" />
@@ -549,7 +549,7 @@ const WellnessAnalytics = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-elevated bg-card/85 border-serenity-calm/35">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <PieChart className="w-5 h-5" />
@@ -566,7 +566,7 @@ const WellnessAnalytics = () => {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        <Card>
+        <Card className="card-elevated bg-card/85 border-serenity-calm/35">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <BarChart3 className="w-5 h-5" />
@@ -581,7 +581,7 @@ const WellnessAnalytics = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-elevated bg-card/85 border-serenity-calm/35">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Target className="w-5 h-5" />
@@ -597,7 +597,7 @@ const WellnessAnalytics = () => {
                       <span className="capitalize">{factor}</span>
                       <span className="font-medium">{score}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-muted/60 rounded-full h-2">
                       <div className={`h-2 rounded-full ${getScoreBgColor(score)}`} style={{ width: `${score}%` }}></div>
                     </div>
                   </div>
@@ -609,7 +609,7 @@ const WellnessAnalytics = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-elevated bg-card/85 border-serenity-calm/35">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Zap className="w-5 h-5" />
@@ -619,8 +619,8 @@ const WellnessAnalytics = () => {
           <CardContent>
             <div className="space-y-3">
               {insights.map((insight, index) => (
-                <div key={index} className="p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">{insight}</p>
+                <div key={index} className="p-3 bg-primary/10 border border-primary/25 rounded-lg">
+                  <p className="text-sm text-primary-foreground/95">{insight}</p>
                 </div>
               ))}
             </div>
@@ -629,6 +629,7 @@ const WellnessAnalytics = () => {
       </div>
 
       {loading && <p className="text-center text-sm text-muted-foreground">Loading analytics...</p>}
+      </div>
     </div>
   );
 };
