@@ -370,7 +370,7 @@ const MeditationPlayer = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft relative meditation-static-ui">
-      <FeatureNavbar featureName="🧘 Meditation & Breathing" />
+      <FeatureNavbar featureName="🧘 Meditation & Wellness" />
       <div className="pointer-events-none absolute top-8 -left-16 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute bottom-16 -right-16 w-72 h-72 rounded-full bg-pink-500/10 blur-3xl" />
       <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">

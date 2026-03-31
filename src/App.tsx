@@ -13,6 +13,7 @@ import WellnessJournal from "./components/ui/WellnessJournal";
 import WellnessAnalytics from "./components/ui/WellnessAnalytics";
 import CrisisSupport from "./components/ui/CrisisSupport";
 import NotFound from "./pages/NotFound";
+import ProfilePage from "./pages/ProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/mood-tracker" element={<MoodTracker />} />
           <Route path="/meditation" element={<MeditationPlayer />} />
           <Route path="/journal" element={<WellnessJournal />} />

@@ -183,6 +183,14 @@ const Dashboard = () => {
 
                 {/* Action Section */}
                 <div className="px-4 py-4 flex flex-col space-y-3">
+                                    <Button
+                                      onClick={() => { setMenuOpen(false); navigate('/profile'); }}
+                                      className="w-full py-2.5 rounded-lg text-sm font-semibold"
+                                      style={{ background: 'none', color: 'inherit', border: '1px solid #ddd', boxShadow: 'none' }}
+                                    >
+                                      <User className="w-4 h-4 mr-2" />
+                                      <span>Profile & Daily Report</span>
+                                    </Button>
                   <Button
                     onClick={handleLogout}
                     className="w-full btn-primary-enhanced py-2.5 rounded-lg text-sm font-semibold"
