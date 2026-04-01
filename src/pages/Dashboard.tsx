@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Heart, MessageCircle, Calendar, TrendingUp, Shield, User, Menu } from "lucide-react";
+import { LogOut, Heart, MessageCircle, Calendar, TrendingUp, Shield, User, Menu, BellRing, HandHeart, ScanFace, Palette } from "lucide-react";
 
 // ✅ added import
 import Chatbot from "@/components/ui/Chatbot";
@@ -191,6 +191,28 @@ const Dashboard = () => {
                                       <User className="w-4 h-4 mr-2" />
                                       <span>Profile & Daily Report</span>
                                     </Button>
+                  <Button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/profile?tab=reminders');
+                    }}
+                    className="w-full py-2.5 rounded-lg text-sm font-semibold"
+                    style={{ background: 'none', color: 'inherit', border: '1px solid #ddd', boxShadow: 'none' }}
+                  >
+                    <BellRing className="w-4 h-4 mr-2" />
+                    <span>Smart Wellness Reminders</span>
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/profile?tab=social');
+                    }}
+                    className="w-full py-2.5 rounded-lg text-sm font-semibold"
+                    style={{ background: 'none', color: 'inherit', border: '1px solid #ddd', boxShadow: 'none' }}
+                  >
+                    <HandHeart className="w-4 h-4 mr-2" />
+                    <span>Human-Like Interaction</span>
+                  </Button>
                   <Button
                     onClick={handleLogout}
                     className="w-full btn-primary-enhanced py-2.5 rounded-lg text-sm font-semibold"
@@ -394,6 +416,25 @@ const Dashboard = () => {
           <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
             <CardHeader className="text-center pb-4">
               <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
+                <Palette className="text-white w-8 h-8" />
+              </div>
+              <CardTitle className="text-xl font-bold text-foreground">Mood-to-Art</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2">
+                Convert your feelings into a downloadable AI-inspired digital painting
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Link to="/mood-to-art">
+                <Button size="sm" className="btn-primary-enhanced px-6 py-2.5 rounded-lg">
+                  Create Art
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
                 <Heart className="text-white w-8 h-8" />
               </div>
               <CardTitle className="text-xl font-bold text-foreground">Journal</CardTitle>
@@ -443,6 +484,25 @@ const Dashboard = () => {
               <Link to="/crisis-support">
                 <Button size="sm" className="btn-primary-enhanced px-6 py-2.5 rounded-lg">
                   Get Help
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
+                <ScanFace className="text-white w-8 h-8" />
+              </div>
+              <CardTitle className="text-xl font-bold text-foreground">Mood Scanner</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2">
+                Camera + voice based emotion check-in with AI wellness guidance
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Link to="/mood-scanner">
+                <Button size="sm" className="btn-primary-enhanced px-6 py-2.5 rounded-lg">
+                  Start Scan
                 </Button>
               </Link>
             </CardContent>

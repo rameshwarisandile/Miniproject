@@ -8,10 +8,13 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import MoodTracker from "./pages/MoodTracker";
+import MoodScanner from "./pages/MoodScanner";
+import MoodToArt from "./pages/MoodToArt";
 import MeditationPlayer from "./components/ui/MeditationPlayer";
 import WellnessJournal from "./components/ui/WellnessJournal";
 import WellnessAnalytics from "./components/ui/WellnessAnalytics";
 import CrisisSupport from "./components/ui/CrisisSupport";
+import WellnessReminderScheduler from "./components/ui/WellnessReminderScheduler";
 import NotFound from "./pages/NotFound";
 import ProfilePage from "./pages/ProfilePage";
 
@@ -22,6 +25,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <WellnessReminderScheduler />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -30,6 +34,8 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/mood-tracker" element={<MoodTracker />} />
+          <Route path="/mood-scanner" element={<MoodScanner />} />
+          <Route path="/mood-to-art" element={<MoodToArt />} />
           <Route path="/meditation" element={<MeditationPlayer />} />
           <Route path="/journal" element={<WellnessJournal />} />
           <Route path="/analytics" element={<WellnessAnalytics />} />

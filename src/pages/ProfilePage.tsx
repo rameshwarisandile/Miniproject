@@ -1,25 +1,106 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import ReportGenerator from "@/components/ui/ReportGenerator";
+import SmartWellnessReminders from "@/components/ui/SmartWellnessReminders";
+import HumanLikeSocialInteraction from "@/components/ui/HumanLikeSocialInteraction";
 import FeatureNavbar from "@/components/ui/FeatureNavbar";
+import { BellRing, FileText, HandHeart } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 const ProfilePage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeView, setActiveView] = useState<"report" | "reminders" | "social">(
+    searchParams.get("tab") === "reminders" ? "reminders" : searchParams.get("tab") === "social" ? "social" : "report",
+  );
   const backendUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
   const userId = backendUser?.id || backendUser?._id || null;
   const userName = backendUser?.name || "User";
 
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    setActiveView(tab === "reminders" ? "reminders" : tab === "social" ? "social" : "report");
+  }, [searchParams]);
+
+  const switchView = (view: "report" | "reminders" | "social") => {
+    setActiveView(view);
+    setSearchParams({ tab: view === "reminders" ? "reminders" : view === "social" ? "social" : "report" });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-serenity-soft">
-      <FeatureNavbar featureName="📄 Report" />
+      <FeatureNavbar
+        featureName={
+          activeView === "report"
+            ? "📄 Report"
+            : activeView === "reminders"
+              ? "⏰ Smart Reminders"
+              : "🤝 Social Interaction"
+        }
+      />
 
-      <div className="mx-auto flex min-h-[calc(100vh-96px)] w-full max-w-5xl items-center px-4 py-8">
+      <div className="mx-auto w-full max-w-5xl px-4 py-8 space-y-5">
+        <Card className="card-elevated w-full border-primary/20 bg-card/80 shadow-serenity-lg backdrop-blur-sm">
+          <CardContent className="pt-6">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Button
+                onClick={() => switchView("report")}
+                className={`h-12 text-sm font-semibold ${
+                  activeView === "report"
+                    ? "bg-gradient-to-r from-primary to-accent text-white"
+                    : "bg-card border border-primary/30 text-foreground"
+                }`}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Daily Report
+              </Button>
+
+              <Button
+                onClick={() => switchView("reminders")}
+                className={`h-12 text-sm font-semibold ${
+                  activeView === "reminders"
+                    ? "bg-gradient-to-r from-primary to-accent text-white"
+                    : "bg-card border border-primary/30 text-foreground"
+                }`}
+              >
+                <BellRing className="mr-2 h-4 w-4" />
+                Smart Wellness Reminders
+              </Button>
+
+              <Button
+                onClick={() => switchView("social")}
+                className={`h-12 text-sm font-semibold ${
+                  activeView === "social"
+                    ? "bg-gradient-to-r from-primary to-accent text-white"
+                    : "bg-card border border-primary/30 text-foreground"
+                }`}
+              >
+                <HandHeart className="mr-2 h-4 w-4" />
+                Human-Like Interaction
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="card-elevated w-full border-primary/20 bg-card/80 shadow-serenity-lg backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="text-center text-2xl font-bold text-gradient-primary">Report</CardTitle>
+            <CardTitle className="text-center text-2xl font-bold text-gradient-primary">
+              {activeView === "report"
+                ? "Report"
+                : activeView === "reminders"
+                  ? "Smart Wellness Reminders"
+                  : "Human-Like Social Interaction"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <ReportGenerator userId={userId} userName={userName} />
+            {activeView === "report" ? (
+              <ReportGenerator userId={userId} userName={userName} />
+            ) : activeView === "reminders" ? (
+              <SmartWellnessReminders userId={userId} userName={userName} />
+            ) : (
+              <HumanLikeSocialInteraction userId={userId} userName={userName} />
+            )}
           </CardContent>
         </Card>
       </div>
