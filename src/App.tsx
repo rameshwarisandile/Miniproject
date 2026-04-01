@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import MoodTracker from "./pages/MoodTracker";
 import MoodScanner from "./pages/MoodScanner";
 import MoodToArt from "./pages/MoodToArt";
+import MindGut from "./pages/MindGut";
 import MeditationPlayer from "./components/ui/MeditationPlayer";
 import WellnessJournal from "./components/ui/WellnessJournal";
 import WellnessAnalytics from "./components/ui/WellnessAnalytics";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/mood-tracker" element={<MoodTracker />} />
           <Route path="/mood-scanner" element={<MoodScanner />} />
           <Route path="/mood-to-art" element={<MoodToArt />} />
+          <Route path="/mind-gut" element={<MindGut />} />
           <Route path="/meditation" element={<MeditationPlayer />} />
           <Route path="/journal" element={<WellnessJournal />} />
           <Route path="/analytics" element={<WellnessAnalytics />} />

@@ -14,6 +14,8 @@ const preferencesRoutes = require("./routes/preferences");
 const moodScannerRoutes = require("./routes/moodScanner");
 const engagementRoutes = require("./routes/engagement");
 const moodArtRoutes = require("./routes/moodArt");
+const mindGutRoutes = require("./routes/mindGut");
+const dailyZenRoutes = require("./routes/dailyZen");
 
 dotenv.config();
 
@@ -136,6 +138,8 @@ app.use("/api/preferences", preferencesRoutes);
 app.use("/api/mood-scanner", moodScannerRoutes);
 app.use("/api/engagement", engagementRoutes);
 app.use("/api/mood-art", moodArtRoutes);
+app.use("/api/mind-gut", mindGutRoutes);
+app.use("/api/daily-zen", dailyZenRoutes);
 
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);

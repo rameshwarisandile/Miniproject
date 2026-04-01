@@ -1,15 +1,8 @@
-  // Helper to get full image URL
-  const getProfileImageUrl = (img) => {
-    if (!img) return "";
-    if (img.startsWith("http") || img.startsWith("data:")) return img;
-    // Change this to your backend base URL if different
-    return `http://localhost:8120${img}`;
-  };
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, Heart, MessageCircle, Calendar, TrendingUp, Shield, User, Menu, BellRing, HandHeart, ScanFace, Palette } from "lucide-react";
+import { LogOut, Heart, MessageCircle, Calendar, TrendingUp, Shield, User, Menu, BellRing, HandHeart, ScanFace, Palette, Salad, Sunrise } from "lucide-react";
 
 // ✅ added import
 import Chatbot from "@/components/ui/Chatbot";
@@ -20,6 +13,12 @@ const Dashboard = () => {
   const [showChatbot, setShowChatbot] = useState(false); // ✅ added state
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  const getProfileImageUrl = (img) => {
+    if (!img) return "";
+    if (img.startsWith("http") || img.startsWith("data:")) return img;
+    return `http://localhost:8120${img}`;
+  };
 
   // Define userId at the top so all functions can use it
   const backendUser = JSON.parse(localStorage.getItem("backendUser") || '{}');
@@ -212,6 +211,17 @@ const Dashboard = () => {
                   >
                     <HandHeart className="w-4 h-4 mr-2" />
                     <span>Human-Like Interaction</span>
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/profile?tab=zen');
+                    }}
+                    className="w-full py-2.5 rounded-lg text-sm font-semibold"
+                    style={{ background: 'none', color: 'inherit', border: '1px solid #ddd', boxShadow: 'none' }}
+                  >
+                    <Sunrise className="w-4 h-4 mr-2" />
+                    <span>The Daily Zen</span>
                   </Button>
                   <Button
                     onClick={handleLogout}
@@ -427,6 +437,25 @@ const Dashboard = () => {
               <Link to="/mood-to-art">
                 <Button size="sm" className="btn-primary-enhanced px-6 py-2.5 rounded-lg">
                   Create Art
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="card-elevated p-6 hover:shadow-serenity-lg transition-all duration-300 hover:-translate-y-2">
+            <CardHeader className="text-center pb-4">
+              <div className="w-16 h-16 bg-serenity-gradient rounded-xl flex items-center justify-center mx-auto mb-4 shadow-serenity-lg transform transition-transform hover:scale-105">
+                <Salad className="text-white w-8 h-8" />
+              </div>
+              <CardTitle className="text-xl font-bold text-foreground">Mind-Gut Connection</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-2">
+                AI food suggestions based on your current mood to support gut-brain wellness
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Link to="/mind-gut">
+                <Button size="sm" className="btn-primary-enhanced px-6 py-2.5 rounded-lg">
+                  Get Food Plan
                 </Button>
               </Link>
             </CardContent>
