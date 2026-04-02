@@ -4,13 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link, useNavigate } from "react-router-dom";
 import { LogOut, Heart, MessageCircle, Calendar, TrendingUp, Shield, User, Menu, BellRing, HandHeart, ScanFace, Palette, Salad, Sunrise } from "lucide-react";
 
-// ✅ added import
+// added import
 import Chatbot from "@/components/ui/Chatbot";
 
 const Dashboard = () => {
   const [userName, setUserName] = useState("");
   const [userImage, setUserImage] = useState("");
-  const [showChatbot, setShowChatbot] = useState(false); // ✅ added state
+  const [showChatbot, setShowChatbot] = useState(false); // added state
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -314,7 +314,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-4xl font-bold text-gradient-primary">{moodCount}</div>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                {lastMood ? `Last: ${lastMood} 🎯` : "No entries yet"}
+                {lastMood ? `Last: ${lastMood}` : "No entries yet"}
               </p>
             </CardContent>
           </Card>
@@ -328,7 +328,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-bold text-gradient-primary">{streak}</div>
-              <p className="text-xs text-muted-foreground mt-1">Days active 🔥</p>
+              <p className="text-xs text-muted-foreground mt-1">Days active</p>
             </CardContent>
           </Card>
 
@@ -341,7 +341,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-bold text-gradient-primary">{progress}%</div>
-              <p className="text-xs text-muted-foreground mt-1">Weekly goal ⭐</p>
+              <p className="text-xs text-muted-foreground mt-1">Weekly goal</p>
             </CardContent>
           </Card>
 
@@ -354,7 +354,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-4xl font-bold text-gradient-primary">{chatCount}</div>
-              <p className="text-xs text-muted-foreground mt-1">This month 💬</p>
+              <p className="text-xs text-muted-foreground mt-1">This month</p>
             </CardContent>
           </Card>
         </div>
@@ -539,7 +539,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ✅ render chatbot if active */}
+      {/* render chatbot if active */}
       {showChatbot && <Chatbot />} 
     </div>
   );
