@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Heart } from "lucide-react";
+import { Eye, EyeOff, Rocket } from "lucide-react";
 import { apiUrl, parseJsonResponse } from "@/lib/api";
+import heroBackground from "@/assets/hero-dark.jpg";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -52,55 +51,92 @@ const Login = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-background to-serenity-soft flex items-center justify-center px-4 py-8">
-      <div className="pointer-events-none absolute top-0 right-0 w-96 h-96 bg-serenity-gradient opacity-10 rounded-full blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-0 w-96 h-96 bg-serenity-gradient opacity-10 rounded-full blur-3xl" />
+    <div className="min-h-screen flex bg-white overflow-hidden">
+      {/* Left Panel - Purple with organic shapes */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-8">
+        <img
+          src={heroBackground}
+          alt="Serenity background"
+          className="absolute inset-0 w-full h-full object-cover scale-105 contrast-110 brightness-110 saturate-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-pink-500/55 via-purple-500/50 to-purple-700/60" />
 
-      <Card className="w-full max-w-md card-elevated animate-fade-in border border-border/40 bg-card/90 backdrop-blur-sm">
-        <CardHeader className="text-center space-y-2 pb-6 sm:pb-8">
-          <div className="inline-flex justify-center mb-2 sm:mb-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-serenity-gradient rounded-2xl flex items-center justify-center shadow-serenity-lg">
-              <Heart className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+        {/* Organic flowing shapes */}
+        <svg className="absolute top-0 right-0 w-96 h-96 text-pink-300 opacity-20" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50,50 Q80,30 120,50 Q140,70 130,110 Q100,140 60,130 Q20,110 50,50" fill="currentColor" />
+        </svg>
+        
+        <svg className="absolute bottom-0 left-0 w-80 h-80 text-purple-300 opacity-15" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10,100 Q40,70 80,80 Q120,90 130,130 Q100,160 50,150 Q10,140 10,100" fill="currentColor" />
+        </svg>
+
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 right-20 w-4 h-4 bg-white rounded-full"></div>
+          <div className="absolute top-32 left-10 w-3 h-3 bg-white rounded-full"></div>
+          <div className="absolute bottom-32 right-32 w-2 h-2 bg-white rounded-full"></div>
+          <div className="absolute bottom-20 left-1/3 w-3 h-3 bg-white rounded-full"></div>
+        </div>
+
+        {/* Rocket illustration */}
+        <div className="relative z-10 text-center space-y-6">
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="w-32 h-32 bg-gradient-to-br from-pink-300 to-purple-500 rounded-full p-2 flex items-center justify-center shadow-2xl">
+                <Rocket className="w-20 h-20 text-white" />
+              </div>
+              <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-pink-400 rounded-full opacity-80"></div>
+              <div className="absolute top-0 -left-3 w-8 h-8 bg-red-400 rounded-full opacity-70"></div>
             </div>
           </div>
-          <CardTitle className="text-3xl sm:text-4xl font-bold text-gradient-primary">Welcome Back</CardTitle>
-          <CardDescription className="text-sm sm:text-base text-muted-foreground">
-            Sign in to continue your wellness journey
-          </CardDescription>
-        </CardHeader>
+          
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">Serenity</h1>
+            <p className="text-pink-100 text-lg">Welcome to wellness</p>
+          </div>
+        </div>
+      </div>
 
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
+      {/* Right Panel - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 bg-white">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">USER LOGIN</h2>
+            <p className="text-gray-500 text-sm">Welcome to the website</p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-4">
             {error && (
-              <div className="p-3 rounded-lg bg-destructive/20 border border-destructive/50 text-destructive/90 text-sm font-medium animate-shake">
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
                 {error}
               </div>
             )}
 
-            <div className="space-y-2.5">
-              <Label htmlFor="email" className="label-enhanced">Email Address</Label>
+            {/* Email */}
+            <div className="space-y-2">
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="Username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="input-focus-glow h-11 sm:h-12 bg-background border-2 border-serenity-calm/30 rounded-lg"
+                className="w-full h-12 rounded-full border-2 border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50 px-5 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all"
                 autoComplete="email"
                 required
               />
             </div>
 
-            <div className="space-y-2.5">
-              <Label htmlFor="password" className="label-enhanced">Password</Label>
+            {/* Password */}
+            <div className="space-y-2">
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-focus-glow h-11 sm:h-12 bg-background border-2 border-serenity-calm/30 rounded-lg pr-12"
+                  className="w-full h-12 rounded-full border-2 border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50 px-5 pr-12 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all"
                   autoComplete="current-password"
                   required
                 />
@@ -108,7 +144,7 @@ const Login = () => {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-1 text-muted-foreground hover:text-primary transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-auto p-1 text-pink-500 hover:text-purple-700 transition-colors"
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label="Toggle password visibility"
                 >
@@ -117,33 +153,50 @@ const Login = () => {
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full btn-primary-enhanced h-11 sm:h-12 rounded-lg text-base font-semibold mt-6">
-              {loading ? "Signing in..." : "Sign In"}
+            {/* Remember & Forgot Password */}
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center gap-2 text-gray-700 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded accent-pink-500" />
+                <span>Remember</span>
+              </label>
+              <Link to="/forgot-password" className="text-pink-600 hover:text-purple-700 font-medium">
+                Forgot password ?
+              </Link>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 bg-gradient-to-r from-pink-500 to-purple-700 hover:from-pink-600 hover:to-purple-800 text-white rounded-full font-semibold text-base transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
+            >
+              {loading ? "Signing in..." : "LOGIN"}
             </Button>
           </form>
 
-          <div className="mt-8 space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-serenity-calm/30" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-card text-muted-foreground">New to Serenity?</span>
-              </div>
-            </div>
-
-            <Link to="/signup" className="block">
-              <Button type="button" variant="outline" className="w-full h-11 sm:h-12 rounded-lg border-2 border-serenity-calm/50 hover:border-primary hover:bg-primary/10 transition-all duration-300 font-semibold">
+          {/* Sign Up */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-600">
+              Don't have an account?{" "}
+              <Link to="/signup" className="text-pink-600 hover:text-purple-700 font-semibold hover:underline">
                 Create Account
-              </Button>
-            </Link>
-
-            <Link to="/" className="block text-center text-sm text-muted-foreground hover:text-primary transition-colors font-medium">
-              Back to home
-            </Link>
+              </Link>
+            </p>
           </div>
-        </CardContent>
-      </Card>
+         
+           {/* Back to Home */}
+           <div className="mt-4 text-center">
+             <Link to="/" className="text-sm text-gray-500 hover:text-pink-600 transition-colors font-medium">
+               {"<- Back to Home"}
+             </Link>
+           </div>
+        </div>
+      </div>
+
+      {/* Wavy SVG divider - visible on larger screens */}
+      <svg className="hidden lg:block absolute right-1/2 top-0 h-full w-24 text-white" viewBox="0 0 100 1200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 0,0 Q 25,300 50,600 T 100,1200 L 100,1200 L 0,1200 Z" fill="currentColor" />
+      </svg>
     </div>
   );
 };
