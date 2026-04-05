@@ -1,24 +1,21 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiUrl, parseJsonResponse } from "@/lib/api";
 import heroBackground from "@/assets/hero-dark.jpg";
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [resetToken, setResetToken] = useState("");
-  const [resetUrl, setResetUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setMessage("");
-    setResetToken("");
-    setResetUrl("");
 
     if (!email.trim()) {
       setError("Please enter your email.");
@@ -38,13 +35,17 @@ const ForgotPassword = () => {
         throw new Error(data?.message || "Unable to process request.");
       }
 
-      setMessage(data?.message || "If account exists, reset link has been sent.");
-      if (data?.resetToken) {
-        setResetToken(String(data.resetToken));
-      }
       if (data?.resetUrl) {
-        setResetUrl(String(data.resetUrl));
+        window.location.assign(String(data.resetUrl));
+        return;
       }
+
+      if (data?.resetToken) {
+        navigate(`/reset-password?token=${encodeURIComponent(String(data.resetToken))}`);
+        return;
+      }
+
+      setMessage(data?.message || "If account exists, reset link has been sent.");
     } catch (err: any) {
       setError(err?.message || "Unable to process request right now.");
     } finally {
@@ -106,27 +107,6 @@ const ForgotPassword = () => {
               {loading ? "Processing..." : "Send Reset Link"}
             </Button>
           </form>
-
-          {(resetToken || resetUrl) && (
-            <div className="p-3 rounded-lg bg-purple-50 border border-purple-200 text-sm text-purple-800">
-              <p className="font-medium">Development reset link:</p>
-              {resetUrl ? (
-                <a
-                  href={resetUrl}
-                  className="text-pink-600 hover:text-purple-700 font-semibold break-all"
-                >
-                  Open reset password page
-                </a>
-              ) : (
-                <Link
-                  to={`/reset-password?token=${encodeURIComponent(resetToken)}`}
-                  className="text-pink-600 hover:text-purple-700 font-semibold break-all"
-                >
-                  Open reset password page
-                </Link>
-              )}
-            </div>
-          )}
 
           <div className="text-center text-sm">
             <Link to="/login" className="text-pink-600 hover:text-purple-700 font-semibold">
