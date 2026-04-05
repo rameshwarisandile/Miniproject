@@ -19,26 +19,26 @@ const Landing = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-transparent to-serenity-focus/20"></div>
         </div>
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in">
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-serenity-gradient bg-clip-text text-transparent animate-slide-up">
+        <div className="relative z-10 text-center px-2 sm:px-4 max-w-4xl mx-auto animate-fade-in">
+          <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-8xl font-bold mb-4 sm:mb-6 bg-serenity-gradient bg-clip-text text-transparent animate-slide-up">
             Serenity
           </h1>
 
-          <p className="text-xl md:text-2xl text-foreground/90 mb-8 animate-slide-up delay-100">
+          <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-foreground/90 mb-4 sm:mb-8 animate-slide-up delay-100">
             Your A Voice Enabled AI Mental Wellness Companion
           </p>
-          <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto animate-slide-up delay-200">
+          <p className="text-sm xs:text-base sm:text-lg text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto animate-slide-up delay-200">
             Break the stigma. Track your mood, practice mindfulness, and get personalized support 
             in a space designed for your generation.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-slide-up delay-300">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center animate-slide-up delay-300">
             <Link to="/signup">
-              <Button size="lg" className="bg-serenity-gradient hover:opacity-90 text-primary-foreground px-8 py-4 text-lg shadow-serenity transition-all duration-300 hover:scale-105 border-0">
+              <Button size="lg" className="bg-serenity-gradient hover:opacity-90 text-primary-foreground px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-serenity transition-all duration-300 hover:scale-105 border-0 min-w-[180px] min-h-[48px]">
                 Start Your Journey
               </Button>
             </Link>
             <Link to="/login">
-              <Button variant="outline" size="lg" className="px-8 py-4 text-lg border-border hover:bg-serenity-calm hover:border-primary transition-all duration-300 hover:scale-105">
+              <Button variant="outline" size="lg" className="px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg border-border hover:bg-serenity-calm hover:border-primary transition-all duration-300 hover:scale-105 min-w-[180px] min-h-[48px]">
                 Sign In
               </Button>
             </Link>
@@ -47,16 +47,16 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 relative">
+      <section className="py-10 sm:py-20 px-2 sm:px-4 relative">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4 text-foreground">How Serenity Helps You</h2>
-            <p className="text-xl text-muted-foreground">Personalized mental wellness tools for your generation</p>
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4 text-foreground">How Serenity Helps You</h2>
+            <p className="text-base sm:text-xl text-muted-foreground">Personalized mental wellness tools for your generation</p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="p-6 text-center hover:shadow-serenity transition-all duration-300 hover:-translate-y-2 bg-card border-border/50 group">
-              <div className="w-16 h-16 bg-serenity-gradient rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
+            <Card className="p-4 sm:p-6 text-center hover:shadow-serenity transition-all duration-300 hover:-translate-y-2 bg-card border-border/50 group">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-serenity-gradient rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
                 <Heart className="text-white w-8 h-8" />
               </div>
               <h3 className="text-xl font-semibold mb-3 text-card-foreground">Mood Tracking</h3>

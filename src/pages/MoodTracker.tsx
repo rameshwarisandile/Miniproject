@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, Heart, Lightbulb, Sparkles } from "lucide-react";
+import { apiUrl } from "@/lib/api";
 import FeatureNavbar from "@/components/ui/FeatureNavbar";
 
 interface MoodEntry {
@@ -100,7 +101,7 @@ const MoodTracker = () => {
     try {
       const prompt = `You are a compassionate mental wellness assistant. User mood: ${selectedMood}. Intensity: ${intensity}/10. Note: ${note || "No note provided"}. Provide 4 short, practical, safe suggestions in simple Hinglish. Keep each suggestion under 18 words. Avoid diagnosis and avoid harmful advice. Return as numbered list only.`;
 
-      const response = await fetch("/api/ask", {
+      const response = await fetch(apiUrl("/api/ask"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -175,7 +176,7 @@ const MoodTracker = () => {
     try {
       const token = localStorage.getItem("jwtToken");
       if (token) {
-        await fetch("/api/moods", {
+        await fetch(apiUrl("/api/moods"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

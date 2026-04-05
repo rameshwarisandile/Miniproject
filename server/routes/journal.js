@@ -1,29 +1,8 @@
 const express = require("express");
-const mongoose = require("mongoose");
+const Journal = require("../models/Journal");
 const jwt = require("jsonwebtoken");
 
 const router = express.Router();
-
-const journalSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  date: { type: String, required: true },
-  gratitude: [String],
-  reflection: String,
-  mood: String,
-  sleepQuality: { type: String, enum: ["excellent", "good", "fair", "poor", ""] },
-  sleepHours: { type: Number, min: 0, max: 24 },
-  goals: [
-    {
-      id: String,
-      text: String,
-      completed: Boolean,
-      createdAt: String,
-      completedAt: String
-    }
-  ]
-}, { timestamps: true });
-
-const Journal = mongoose.model("Journal", journalSchema);
 
 function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];

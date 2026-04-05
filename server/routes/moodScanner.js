@@ -5,53 +5,194 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const router = express.Router();
 
-const GEMINI_API_KEY = process.env.KEY || "";
-const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-2.5-flash" }) : null;
+let modelCache = null;
+let modelCacheKey = "";
+
+const getGeminiModel = () => {
+  const key = (process.env.KEY || process.env.GEMINI_API_KEY || "").trim();
+  if (!key) return null;
+
+  if (!modelCache || modelCacheKey !== key) {
+    const genAI = new GoogleGenerativeAI(key);
+    modelCache = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    modelCacheKey = key;
+  }
+
+  return modelCache;
+};
+
+const ALLOWED_EMOTIONS = new Set(["happy", "calm", "tired", "anxious", "sad", "angry", "neutral"]);
+const ALLOWED_ENERGY = new Set(["low", "medium", "high"]);
 
 const buildPrompt = (voiceNote) => [
-  "You are an empathetic wellness assistant.",
-  "Analyze this user's face image and optional voice note text.",
-  "Infer likely emotion and fatigue signs only as a gentle estimate.",
-  "Return ONLY valid minified JSON with keys:",
-  '{"detectedEmotion":"happy|calm|tired|anxious|sad|angry|neutral","energyLevel":"low|medium|high","fatigueDetected":true/false,"confidence":0.0-1.0,"wellbeingPrompt":"one short Hinglish supportive question","supportiveSuggestions":["short suggestion 1","short suggestion 2","short suggestion 3"]}',
-  "Do not provide diagnosis.",
-  voiceNote ? `Voice note text from user: ${voiceNote}` : "Voice note text from user: not provided.",
+  "You are a facial-expression and voice-context emotion analyzer.",
+  "Analyze the provided face image(s). If multiple frames are provided, use all frames and choose the dominant emotion.",
+  "Use voice note only as secondary context; facial expression should be primary when face is visible.",
+  "Return ONLY strict minified JSON:",
+  '{"detectedEmotion":"happy|calm|tired|anxious|sad|angry|neutral","energyLevel":"low|medium|high","fatigueDetected":true/false,"confidence":0.0-1.0,"wellbeingPrompt":"2-3 word direct Hinglish supportive question or statement","supportiveSuggestions":["varied suggestion 1","varied suggestion 2","varied suggestion 3"]}',
+  "CRITICAL: Generate UNIQUE wellbeingPrompt and supportiveSuggestions every time based on current expression/context.",
+  "If expression is clearly smiling/laughing, prefer happy over neutral.",
+  "If brows are tense/jaw tight/scowl is present, prefer angry or anxious over neutral.",
+  "Use neutral only when expression is truly unclear/flat.",
+  "Do not provide medical diagnosis.",
+  "Keep supportiveSuggestions practical and short.",
+  voiceNote ? `Voice note from user: "${voiceNote}"` : "No voice note provided.",
 ].join("\n");
 
-const buildWellbeingPrompt = (emotion, fatigueDetected) => {
-  if (fatigueDetected || emotion === "tired") {
-    return "Aapki aankhein thaki hui lag rahi hain, kya thodi der break lena chahenge?";
+const normalizeEmotion = (value) => {
+  const emotion = String(value || "").toLowerCase().trim();
+  return ALLOWED_EMOTIONS.has(emotion) ? emotion : "neutral";
+};
+
+const normalizeEnergy = (value) => {
+  const energy = String(value || "").toLowerCase().trim();
+  return ALLOWED_ENERGY.has(energy) ? energy : "medium";
+};
+
+const generateContextualSuggestions = (emotion, fatigueDetected, voiceNote = "") => {
+  const suggestions = [];
+  const voiceLower = voiceNote.toLowerCase();
+
+  // Extract context from voice note
+  const mentionedKeywords = {
+    work: /(kaam|work|office|deadline|project)/i.test(voiceLower),
+    sleep: /(neend|sleep|tired|thak)/i.test(voiceLower),
+    stress: /(tension|stress|worried|ghabra)/i.test(voiceLower),
+    social: /(friend|family|alone|loneliness)/i.test(voiceLower),
+    food: /(bhookh|hungry|diet|khana)/i.test(voiceLower),
+    exercise: /(exercise|walk|gym|fitness)/i.test(voiceLower),
+  };
+
+  // Emotion-specific suggestions with voice context
+  if (emotion === "tired" || fatigueDetected) {
+    if (mentionedKeywords.work) {
+      suggestions.push("Work break lo aur 10-minute nap try kar.");
+    } else if (mentionedKeywords.sleep) {
+      suggestions.push("Raat ko proper sleep fix kar - melatonin ya white noise try kar.");
+    } else {
+      suggestions.push("30-minute rest or meditation session lo.");
+    }
+    if (mentionedKeywords.food) {
+      suggestions.push("Energy boost ke liye ek healthy snack le.");
+    } else {
+      suggestions.push("Pani pee aur light exercise kar.");
+    }
+    suggestions.push("Screen time 20 minutes reduce kar.");
+  } else if (emotion === "anxious") {
+    if (mentionedKeywords.work) {
+      suggestions.push("Task ko chhote steps me divide kar deta.");
+    } else {
+      suggestions.push("4-7-8 breathing technique: 4 count breathe in, 7 hold, 8 breathe out.");
+    }
+    if (mentionedKeywords.social) {
+      suggestions.push("Close friend se quick call karle.");
+    } else {
+      suggestions.push("Grounding exercise try kar - 5 things dekh, 4 suno, 3 touch, 2 smell, 1 taste.");
+    }
+    suggestions.push("Journaling me apne thoughts likh.");
+  } else if (emotion === "sad") {
+    if (mentionedKeywords.social) {
+      suggestions.push("Kisi se baat kar - sharing se relief milega.");
+    } else {
+      suggestions.push("Favorite song lagakar alone time nahi lo, company khoj.");
+    }
+    if (mentionedKeywords.exercise) {
+      suggestions.push("Quick 15-minute walk outdoor ja.");
+    } else {
+      suggestions.push("Kisi ko help kar - helping others mood lift karte.");
+    }
+    suggestions.push("Gratitude list banaa - 3 chhoti cheezein likha.");
+  } else if (emotion === "angry") {
+    if (mentionedKeywords.work) {
+      suggestions.push("Situation se distance le - short break ja.");
+    } else {
+      suggestions.push("Frustration release: cushion punch ya cold water face par daal.");
+    }
+    if (mentionedKeywords.exercise) {
+      suggestions.push("Intense workout ya punching bag use kar.");
+    } else {
+      suggestions.push("Deep breathing + physical activity - running ya jumping jacks.");
+    }
+    suggestions.push("Kya galat hua uska reason likh - perspective badal jayega.");
+  } else if (emotion === "happy" || emotion === "calm") {
+    if (mentionedKeywords.work) {
+      suggestions.push("Is momentum ko maintain kar - productive tasks complete kar.");
+    } else {
+      suggestions.push("Is feeling ko celebrate kar - special kuch kar jo enjoy ho.");
+    }
+    suggestions.push("Positive mood ko journal me note kar - future ka reminder.");
+    suggestions.push("Kisi aur ko share kar - positive energy spread kar.");
+  } else {
+    // Neutral
+    if (mentionedKeywords.work) {
+      suggestions.push("Daily tasks complete kar aur progress track kar.");
+    } else {
+      suggestions.push("Aaj ka ek meaningful activity plan kar.");
+    }
+    suggestions.push("Mindfulness meditation try kar - 5 minute clarity session.");
+    if (mentionedKeywords.food) {
+      suggestions.push("Balanced meal le aur hydration track kar.");
+    } else {
+      suggestions.push("Small goals set kar aur achieve kar - confidence badhega.");
+    }
   }
-  if (emotion === "anxious") {
-    return "Aap thode anxious lag rahe hain, kya 2 minute deep breathing try karna chahenge?";
-  }
-  if (emotion === "sad") {
-    return "Aap thode low lag rahe hain, kya short walk ya kisi friend se baat karna chahenge?";
-  }
-  if (emotion === "angry") {
-    return "Aap tense lag rahe hain, kya 60-second pause aur slow breathing lena chahenge?";
-  }
-  if (emotion === "happy" || emotion === "calm") {
-    return "Aap ka expression positive lag raha hai, kya is mood ko journal me save karna chahenge?";
-  }
-  return "Aap kaise feel kar rahe ho abhi, kya quick mood check-in karna chahenge?";
+
+  return suggestions.slice(0, 3);
 };
 
 const safeFallback = (voiceNote = "") => {
-  const mentionsTired = /(thak|tired|sleep|neend|exhaust)/i.test(voiceNote);
-  const detectedEmotion = mentionsTired ? "tired" : "neutral";
+  const voiceLower = voiceNote.toLowerCase();
+  const mentionsTired = /(thak|tired|sleep|neend|exhaust|bahar|worn)/i.test(voiceLower);
+  const mentionsStress = /(tension|stress|worried|ghabra|nervou)/i.test(voiceLower);
+  const mentionsBad = /(sad|down|depressed|low|gloomy|dukhi)/i.test(voiceLower);
+  const mentionsGood = /(happy|great|excited|good|amazing|awesome|khush)/i.test(voiceLower);
+
+  let detectedEmotion = "neutral";
+  if (mentionsTired) detectedEmotion = "tired";
+  else if (mentionsStress) detectedEmotion = "anxious";
+  else if (mentionsBad) detectedEmotion = "sad";
+  else if (mentionsGood) detectedEmotion = "happy";
+
   const fatigueDetected = mentionsTired;
+
+  const wellbeingPrompts = {
+    tired: [
+      "Rest leto, body ko time do recovery ka.",
+      "Thak raha ho? 10-min break lete ho?",
+      "Energy low hai, nap ya meditation try kar.",
+    ],
+    anxious: [
+      "Ghabra mat - breathing exercise karte hain?",
+      "Concern ke baare me baat kar isse handle hoga.",
+      "Present moment me reh - grounding technique try kar.",
+    ],
+    sad: [
+      "Feeling low? Kisi close person se baat kar.",
+      "Is moment se bahar aa - activity change kar.",
+      "Khud se pyaar kar - kya treat kar sakta hai?",
+    ],
+    happy: [
+      "Feeling great! Ise celebrate aur journal me note kar.",
+      "Khush lag rahe ho - iska momentum maintain kar.",
+      "Is mood ko share kar sabke saath.",
+    ],
+    neutral: [
+      "Mood stable hai - small goals achieve kar.",
+      "Kya meaningful activity kar sakte hain aaj?",
+      "Self-care routine follow kar consistency se.",
+    ],
+  };
+
+  const selectedPrompt =
+    wellbeingPrompts[detectedEmotion][Math.floor(Math.random() * wellbeingPrompts[detectedEmotion].length)];
 
   return {
     detectedEmotion,
-    energyLevel: mentionsTired ? "low" : "medium",
+    energyLevel: mentionsTired ? "low" : mentionsGood ? "high" : "medium",
     fatigueDetected,
-    confidence: 0.42,
-    wellbeingPrompt: buildWellbeingPrompt(detectedEmotion, fatigueDetected),
-    supportiveSuggestions: mentionsTired
-      ? ["2 minute deep breathing try karein.", "Pani piyein aur short walk karein.", "Screen se 5 minute break lein."]
-      : ["Aaj ka mood tracker check-in complete karein.", "Hydration reminder follow karein.", "One gentle task finish karein."],
+    confidence: 0.45,
+    wellbeingPrompt: selectedPrompt,
+    supportiveSuggestions: generateContextualSuggestions(detectedEmotion, fatigueDetected, voiceNote),
   };
 };
 
@@ -74,11 +215,20 @@ const isGeminiAuthError = (error) => {
 
 router.post("/scan", authMiddleware, async (req, res) => {
   try {
+    const model = getGeminiModel();
     const userId = req.user?.userId;
-    const { imageBase64, voiceNote } = req.body || {};
+    const { imageBase64, framesBase64, voiceNote } = req.body || {};
 
-    if (!imageBase64 || typeof imageBase64 !== "string") {
-      return res.status(400).json({ message: "imageBase64 is required" });
+    const imageFrames = Array.isArray(framesBase64)
+      ? framesBase64.filter((item) => typeof item === "string" && item.length > 100).slice(0, 3)
+      : [];
+
+    if (imageFrames.length === 0 && typeof imageBase64 === "string" && imageBase64.length > 100) {
+      imageFrames.push(imageBase64);
+    }
+
+    if (imageFrames.length === 0) {
+      return res.status(400).json({ message: "imageBase64 or framesBase64 is required" });
     }
 
     const fallback = safeFallback(voiceNote || "");
@@ -92,33 +242,45 @@ router.post("/scan", authMiddleware, async (req, res) => {
         rawResponse: JSON.stringify({ mode: "fallback", reason: "missing_key" }),
       });
 
-      return res.json({ ...fallback, id: saved._id, createdAt: saved.createdAt, source: "fallback" });
+      return res.json({ ...fallback, id: saved._id, createdAt: saved.createdAt, source: "fallback-no-ai" });
     }
 
     const prompt = buildPrompt(voiceNote || "");
-    const content = [
-      { text: prompt },
-      {
-        inlineData: {
-          data: imageBase64,
-          mimeType: "image/jpeg",
-        },
+    const imageParts = imageFrames.map((frame) => ({
+      inlineData: {
+        data: frame,
+        mimeType: "image/jpeg",
       },
-    ];
+    }));
+
+    const content = {
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: prompt }, ...imageParts],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.25,
+        responseMimeType: "application/json",
+      },
+    };
 
     try {
       const result = await model.generateContent(content);
       const replyText = result?.response?.text?.() || "";
       const parsed = parseJsonFromModel(replyText);
 
-      const detectedEmotion = parsed?.detectedEmotion || fallback.detectedEmotion;
+      const detectedEmotion = normalizeEmotion(parsed?.detectedEmotion || fallback.detectedEmotion);
       const fatigueDetected = typeof parsed?.fatigueDetected === "boolean" ? parsed.fatigueDetected : fallback.fatigueDetected;
+       
+      // Use AI-generated suggestions if available, otherwise use contextual fallback
       const normalized = {
         detectedEmotion,
-        energyLevel: parsed?.energyLevel || fallback.energyLevel,
+        energyLevel: normalizeEnergy(parsed?.energyLevel || fallback.energyLevel),
         fatigueDetected,
         confidence: Math.max(0, Math.min(1, Number(parsed?.confidence || fallback.confidence))),
-        wellbeingPrompt: buildWellbeingPrompt(detectedEmotion, fatigueDetected),
+        wellbeingPrompt: parsed?.wellbeingPrompt || fallback.wellbeingPrompt,
         supportiveSuggestions: Array.isArray(parsed?.supportiveSuggestions)
           ? parsed.supportiveSuggestions.slice(0, 3)
           : fallback.supportiveSuggestions,

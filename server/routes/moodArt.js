@@ -1,25 +1,178 @@
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware");
 const MoodArt = require("../models/MoodArt");
+const Mood = require("../models/Mood");
+const Chat = require("../models/Chat");
+const MoodScan = require("../models/MoodScan");
+const Journal = require("../models/Journal");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const CryptoJS = require("crypto-js");
 
 const router = express.Router();
 
 const GEMINI_API_KEY = process.env.KEY || "";
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 const model = genAI ? genAI.getGenerativeModel({ model: "gemini-2.5-flash" }) : null;
+const CHAT_SECRET_KEY = process.env.CHAT_SECRET_KEY || "your_secret_key";
+const ALLOWED_STYLE_MODES = new Set(["cinematic", "dreamy", "bold", "minimal"]);
 
-const buildPrompt = (inputText) => [
-  "You are an art director for generative therapy.",
-  "Convert the user's feelings into an abstract digital painting concept.",
-  "Return ONLY valid minified JSON with keys:",
-  '{"title":"short artistic title","moodSummary":"1 line mood interpretation","composition":"1 sentence describing the scene","palette":["#hex1","#hex2","#hex3","#hex4","#hex5"],"overlayText":"1 short poetic line","socialCaption":"short caption for social media","shapes":[{"type":"orb|wave|spark|mist|glow|petal|moon","x":0.1,"y":0.2,"size":0.3,"opacity":0.4,"rotation":20,"color":"#hex"}]}',
-  "Keep it emotionally sensitive, calm, and visually rich.",
-  "Prefer painterly sweeps, layered forms, and soft gradients instead of tiny dots.",
-  "Generate 8 to 12 medium/large shapes distributed across the canvas.",
-  "Do not mention policy or diagnosis.",
-  `User feeling description: ${inputText}`,
-].join("\n");
+// Helper function to get today's date in YYYY-MM-DD format
+const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0];
+};
+
+// Helper function to fetch today's data from all sources
+const getTodayData = async (userId) => {
+  try {
+    const today = getTodayDate();
+    const todayStart = new Date(today);
+    const todayEnd = new Date(today);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+
+    // Fetch today's mood entries
+    const todayMoods = await Mood.find({
+      user: userId,
+      createdAt: { $gte: todayStart, $lt: todayEnd }
+    }).lean();
+
+    // Fetch journal entry for today
+    const todayJournal = await Journal.findOne({
+      user: userId,
+      date: today
+    }).lean();
+
+    // Fetch today's chat history
+    const todayChats = await Chat.find({
+      user: userId,
+      createdAt: { $gte: todayStart, $lt: todayEnd }
+    }).lean();
+
+    // Decrypt chat messages
+    const decryptedChats = todayChats.map(chat => {
+      try {
+        const bytesMsg = CryptoJS.AES.decrypt(chat.message || "", CHAT_SECRET_KEY);
+        const message = bytesMsg.toString(CryptoJS.enc.Utf8) || "";
+        let reply = "";
+        if (chat.reply) {
+          const bytesReply = CryptoJS.AES.decrypt(chat.reply, CHAT_SECRET_KEY);
+          reply = bytesReply.toString(CryptoJS.enc.Utf8) || "";
+        }
+        return { message, reply };
+      } catch {
+        return { message: "", reply: "" };
+      }
+    });
+
+    // Fetch today's mood scans
+    const todayMoodScans = await MoodScan.find({
+      user: userId,
+      createdAt: { $gte: todayStart, $lt: todayEnd }
+    }).lean();
+
+    return {
+      moods: todayMoods,
+      journal: todayJournal,
+      chats: decryptedChats,
+      moodScans: todayMoodScans
+    };
+  } catch (err) {
+    console.error("Error fetching today's data:", err);
+    return {
+      moods: [],
+      journal: null,
+      chats: [],
+      moodScans: []
+    };
+  }
+};
+
+// Helper function to build context from collected data
+const buildContextFromData = (todayData) => {
+  const parts = [];
+
+  // Add mood entries context
+  if (todayData.moods && todayData.moods.length > 0) {
+    const moodsSummary = todayData.moods.map(m => `${m.mood}${m.note ? ` (${m.note})` : ""}`).join(", ");
+    parts.push(`Today's mood entries: ${moodsSummary}`);
+  }
+
+  // Add journal context
+  if (todayData.journal) {
+    const journalParts = [];
+    if (todayData.journal.mood) journalParts.push(`Mood: ${todayData.journal.mood}`);
+    if (todayData.journal.reflection) journalParts.push(`Reflection: ${todayData.journal.reflection}`);
+    if (todayData.journal.gratitude && todayData.journal.gratitude.length > 0) {
+      journalParts.push(`Grateful for: ${todayData.journal.gratitude.join(", ")}`);
+    }
+    if (journalParts.length > 0) {
+      parts.push(`Journal entry: ${journalParts.join("; ")}`);
+    }
+  }
+
+  // Add chat context (summary of key themes)
+  if (todayData.chats && todayData.chats.length > 0) {
+    const chatTexts = todayData.chats
+      .filter(c => c.message || c.reply)
+      .map(c => `${c.message} ${c.reply}`.trim())
+      .filter(t => t.length > 0)
+      .slice(0, 3);
+    if (chatTexts.length > 0) {
+      parts.push(`Recent chat topics: ${chatTexts.join("; ")}`);
+    }
+  }
+
+  // Add mood scan context
+  if (todayData.moodScans && todayData.moodScans.length > 0) {
+    const scans = todayData.moodScans.slice(-2); // Last 2 scans
+    const scansSummary = scans
+      .map(s => `${s.detectedEmotion || "neutral"} (confidence: ${(s.confidence * 100).toFixed(0)}%)`)
+      .join(", ");
+    parts.push(`Recent mood scans: ${scansSummary}`);
+  }
+
+  return parts.length > 0 ? parts.join("\n") : null;
+};
+
+const getStyleGuidance = (styleMode = "cinematic") => {
+  const style = String(styleMode || "cinematic").toLowerCase();
+  if (style === "dreamy") {
+    return "Style mode: Dreamy. Use airy composition, soft transitions, pastel lighting, floating forms, and calm emotional tone.";
+  }
+  if (style === "bold") {
+    return "Style mode: Bold. Use confident strokes, high contrast, energetic rhythm, strong focal highlights, and dramatic color separation.";
+  }
+  if (style === "minimal") {
+    return "Style mode: Minimal. Use fewer focal masses, intentional negative space, clean gradients, subtle texture, and elegant restraint.";
+  }
+  return "Style mode: Cinematic. Use layered depth, atmospheric glow, painterly gradients, and strong foreground-midground-background separation.";
+};
+
+const buildPrompt = (inputText, contextFromData = null, styleMode = "cinematic", variationSeed = 0) => {
+  const basePrompt = [
+    "You are an art director for generative therapy.",
+    "Convert the user's feelings into an abstract digital painting concept.",
+    "Return ONLY valid minified JSON with keys:",
+    '{"title":"short artistic title","moodSummary":"1 line mood interpretation","composition":"1 sentence describing the scene","palette":["#hex1","#hex2","#hex3","#hex4","#hex5"],"overlayText":"1 short poetic line","socialCaption":"short caption for social media","shapes":[{"type":"orb|wave|spark|mist|glow|petal|moon|rain","x":0.1,"y":0.2,"size":0.3,"opacity":0.4,"rotation":20,"color":"#hex"}]}',
+    "Keep it emotionally sensitive, calm, and visually rich.",
+    "Avoid flat coloring-book or childish look.",
+    "Prefer cinematic painterly sweeps, layered forms, atmospheric depth, and focal contrast.",
+    "Use cohesive palette harmony (avoid random neon clashes unless emotionally justified).",
+    "Generate 10 to 16 overlapping shapes distributed with foreground, midground, and background depth.",
+    getStyleGuidance(styleMode),
+    `Variation seed: ${String(variationSeed || 0)}. Respect this seed to generate a distinct but relevant visual arrangement.`,
+    "Do not mention policy or diagnosis.",
+  ];
+
+  if (contextFromData) {
+    basePrompt.push("Consider the user's day holistically based on their mood log, journal, chats, and facial expressions:");
+    basePrompt.push(contextFromData);
+  }
+
+  basePrompt.push(`User feeling description: ${inputText}`);
+
+  return basePrompt.join("\n");
+};
 
 const isGeminiAuthError = (error) => {
   const message = (error?.message || "").toLowerCase();
@@ -39,6 +192,56 @@ const parseJsonFromModel = (text) => {
 };
 
 const slugToSentence = (value) => String(value || "").toLowerCase();
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+const normalizeShape = (shape, fallbackColor = "#E2E8F0") => {
+  const type = String(shape?.type || "orb").toLowerCase();
+  const allowedType = ["orb", "wave", "spark", "mist", "glow", "petal", "moon", "rain"].includes(type) ? type : "orb";
+  return {
+    type: allowedType,
+    x: clamp(Number(shape?.x ?? 0.5), 0.06, 0.94),
+    y: clamp(Number(shape?.y ?? 0.5), 0.06, 0.94),
+    size: clamp(Number(shape?.size ?? 0.24), 0.1, 0.7),
+    opacity: clamp(Number(shape?.opacity ?? 0.48), 0.12, 0.9),
+    rotation: Number(shape?.rotation ?? 0),
+    color: typeof shape?.color === "string" && shape.color.trim() ? shape.color : fallbackColor,
+  };
+};
+
+const enrichShapes = (shapes, palette = []) => {
+  const safePalette = Array.isArray(palette) && palette.length ? palette : ["#E2E8F0", "#A78BFA", "#38BDF8", "#F472B6", "#FDE68A"];
+  const base = Array.isArray(shapes) ? shapes.map((shape, idx) => normalizeShape(shape, safePalette[idx % safePalette.length])) : [];
+  const normalizedBase = base.length > 0 ? base : [normalizeShape({}, safePalette[0])];
+
+  if (normalizedBase.length >= 8) {
+    return normalizedBase.slice(0, 12);
+  }
+
+  const extras = [];
+  const target = 10;
+  while (normalizedBase.length + extras.length < target) {
+    const i = extras.length;
+    const seed = normalizedBase[i % normalizedBase.length];
+    const color = safePalette[(i + 2) % safePalette.length] || seed.color;
+    extras.push(
+      normalizeShape(
+        {
+          type: i % 3 === 0 ? "mist" : i % 3 === 1 ? "wave" : "glow",
+          x: (seed.x + 0.11 * (i + 1)) % 1,
+          y: (seed.y + 0.07 * (i + 2)) % 1,
+          size: seed.size * (0.78 + (i % 4) * 0.16),
+          opacity: seed.opacity * 0.74,
+          rotation: seed.rotation + (i + 1) * 17,
+          color,
+        },
+        color
+      )
+    );
+  }
+
+  return [...normalizedBase, ...extras].slice(0, 12);
+};
 
 const buildFallbackArt = (inputText) => {
   const text = slugToSentence(inputText);
@@ -157,19 +360,30 @@ const buildFallbackArt = (inputText) => {
     },
   };
 
-  return presets[mood] || presets.reflective;
+  const selected = presets[mood] || presets.reflective;
+  return {
+    ...selected,
+    shapes: enrichShapes(selected.shapes, selected.palette),
+  };
 };
 
 router.post("/generate", authMiddleware, async (req, res) => {
   try {
     const userId = req.user?.userId;
     const inputText = String(req.body?.inputText || "").trim();
+    const requestedStyleMode = String(req.body?.styleMode || "cinematic").toLowerCase();
+    const styleMode = ALLOWED_STYLE_MODES.has(requestedStyleMode) ? requestedStyleMode : "cinematic";
+    const variationSeed = Number(req.body?.variationSeed || 0);
 
     if (!inputText) {
       return res.status(400).json({ message: "inputText is required" });
     }
 
     const fallback = buildFallbackArt(inputText);
+
+    // Fetch today's data from all sources
+    const todayData = await getTodayData(userId);
+    const contextFromData = buildContextFromData(todayData);
 
     if (!model) {
       const saved = await MoodArt.create({
@@ -180,10 +394,10 @@ router.post("/generate", authMiddleware, async (req, res) => {
         rawResponse: JSON.stringify({ mode: "fallback", reason: "missing_key" }),
       });
 
-      return res.json({ ...fallback, id: saved._id, createdAt: saved.createdAt, source: "fallback" });
+      return res.json({ ...fallback, id: saved._id, createdAt: saved.createdAt, source: "fallback", styleMode });
     }
 
-    const prompt = buildPrompt(inputText);
+    const prompt = buildPrompt(inputText, contextFromData, styleMode, variationSeed);
     try {
       const result = await model.generateContent(prompt);
       const replyText = result?.response?.text?.() || "";
@@ -196,7 +410,8 @@ router.post("/generate", authMiddleware, async (req, res) => {
         palette: Array.isArray(parsed?.palette) && parsed.palette.length >= 3 ? parsed.palette.slice(0, 5) : fallback.palette,
         overlayText: parsed?.overlayText || fallback.overlayText,
         socialCaption: parsed?.socialCaption || fallback.socialCaption,
-        shapes: Array.isArray(parsed?.shapes) && parsed.shapes.length > 0 ? parsed.shapes.slice(0, 12) : fallback.shapes,
+        shapes: enrichShapes(Array.isArray(parsed?.shapes) ? parsed.shapes : fallback.shapes, Array.isArray(parsed?.palette) ? parsed.palette : fallback.palette),
+        styleMode,
       };
 
       const saved = await MoodArt.create({
@@ -221,7 +436,7 @@ router.post("/generate", authMiddleware, async (req, res) => {
         rawResponse: String(aiError?.message || "gemini auth error"),
       });
 
-      return res.json({ ...fallback, id: saved._id, createdAt: saved.createdAt, source: "fallback-auth" });
+      return res.json({ ...fallback, id: saved._id, createdAt: saved.createdAt, source: "fallback-auth", styleMode });
     }
   } catch (err) {
     return res.status(500).json({ message: err.message || "Mood art generation failed" });

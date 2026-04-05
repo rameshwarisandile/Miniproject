@@ -1,3 +1,4 @@
+import { apiUrl } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -174,7 +175,7 @@ const WellnessJournal = () => {
     try {
       const token = localStorage.getItem("jwtToken");
       if (token) {
-        await fetch("/api/journal", {
+        await fetch(apiUrl("/api/journal"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

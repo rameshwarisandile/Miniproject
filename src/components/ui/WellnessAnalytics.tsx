@@ -1,3 +1,4 @@
+import { apiUrl } from "@/lib/api";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -285,8 +286,8 @@ const WellnessAnalytics = () => {
       if (token) {
         try {
           const [moodsRes, journalRes] = await Promise.all([
-            fetch("/api/moods", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("/api/journal", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(apiUrl("/api/moods"), { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(apiUrl("/api/journal"), { headers: { Authorization: `Bearer ${token}` } }),
           ]);
 
           if (moodsRes.ok) {

@@ -28,10 +28,12 @@ export const parseJsonResponse = async (response: Response, fallbackMessage: str
 
   const bodyText = await response.text();
   const trimmed = bodyText.trim();
+  const responseTarget = response.url || "unknown-url";
+  const statusInfo = `${response.status} ${response.statusText || ""}`.trim();
 
   if (trimmed.startsWith("<!DOCTYPE") || trimmed.startsWith("<html")) {
     throw new Error(
-      "Server returned HTML instead of JSON. Check whether the backend server is running on port 8120.",
+      `Server returned HTML instead of JSON from ${responseTarget} (${statusInfo}). Check whether the backend server is running on port 8120 and whether this endpoint exists.`,
     );
   }
 

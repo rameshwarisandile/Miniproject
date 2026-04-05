@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, X, Bot, User, Mic, MicOff } from "lucide-react";
+import { apiUrl } from "@/lib/api";
 
 // --- TypeScript: SpeechRecognition typings for cross-browser support ---
 declare global {
@@ -99,11 +100,11 @@ const Chatbot: React.FC = () => {
       try {
         const token = localStorage.getItem("jwtToken");
         if (token) {
-          await axios.post("/api/chats", { message: text }, {
+          await axios.post(apiUrl("/api/chats"), { message: text }, {
             headers: { Authorization: `Bearer ${token}` }
           });
         }
-        const response = await axios.post("/api/ask", { message: text });
+        const response = await axios.post(apiUrl("/api/ask"), { message: text });
         const botMessage: Message = {
           id: Math.random().toString(36).substring(7),
           sender: "bot",
@@ -118,7 +119,7 @@ const Chatbot: React.FC = () => {
         }
         // Backend: Save bot reply
         if (token) {
-          await axios.post("/api/chats", { message: text, reply: response.data.reply }, {
+          await axios.post(apiUrl("/api/chats"), { message: text, reply: response.data.reply }, {
             headers: { Authorization: `Bearer ${token}` }
           });
         }
