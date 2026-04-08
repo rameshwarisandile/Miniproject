@@ -213,6 +213,11 @@ const isGeminiAuthError = (error) => {
   return message.includes("403") || message.includes("unregistered callers") || message.includes("api key") || message.includes("forbidden");
 };
 
+const isGeminiTemporaryError = (error) => {
+  const msg = (error?.message || "").toLowerCase();
+  return msg.includes("429") || msg.includes("503") || msg.includes("quota") || msg.includes("too many requests");
+};
+
 router.post("/scan", authMiddleware, async (req, res) => {
   try {
     const model = getGeminiModel();
@@ -296,7 +301,7 @@ router.post("/scan", authMiddleware, async (req, res) => {
 
       return res.json({ ...normalized, id: saved._id, createdAt: saved.createdAt, source: "ai" });
     } catch (aiError) {
-      if (!isGeminiAuthError(aiError)) {
+      if (!isGeminiAuthError(aiError) && !isGeminiTemporaryError(aiError)) {
         throw aiError;
       }
 
@@ -305,10 +310,10 @@ router.post("/scan", authMiddleware, async (req, res) => {
         voiceNote: voiceNote || "",
         imageCaptured: true,
         ...fallback,
-        rawResponse: String(aiError?.message || "gemini auth error"),
+        rawResponse: String(aiError?.message || "gemini error"),
       });
 
-      return res.json({ ...fallback, id: saved._id, createdAt: saved.createdAt, source: "fallback-auth" });
+      return res.json({ ...fallback, id: saved._id, createdAt: saved.createdAt, source: "fallback" });
     }
   } catch (err) {
     return res.status(500).json({ message: err.message || "Mood scan failed" });

@@ -44,6 +44,28 @@ const GEMINI_API_KEY = process.env.KEY || "";
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 const model = genAI ? genAI.getGenerativeModel({ model: "gemini-2.5-flash" }) : null;
 
+const retryWithBackoff = async (fn, maxRetries = 3, initialDelayMs = 1000) => {
+  let lastError;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      const msg = (error?.message || "").toLowerCase();
+      // Only retry on 503 Service Unavailable
+      if (!msg.includes("503") && !msg.includes("service unavailable")) {
+        throw error;
+      }
+      if (i < maxRetries - 1) {
+        const delayMs = initialDelayMs * Math.pow(2, i);
+        console.log(`[ASK] Retry ${i + 1}/${maxRetries} after ${delayMs}ms due to service unavailable`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+  throw lastError;
+};
+
 const fallbackAskReply = (message = "") => {
   const text = String(message || "").toLowerCase();
   if (/(tired|thak|neend|sleep)/.test(text)) {
@@ -60,14 +82,33 @@ const isGeminiAuthError = (error) => {
   return msg.includes("403") || msg.includes("unregistered callers") || msg.includes("api key") || msg.includes("forbidden");
 };
 
+const isGeminiTemporaryError = (error) => {
+  const msg = (error?.message || "").toLowerCase();
+  return msg.includes("429") || msg.includes("503") || msg.includes("quota") || msg.includes("too many requests");
+};
+
 const askGeminiOrFallback = async (message) => {
-  if (!model) return fallbackAskReply(message);
+  if (!model) {
+    console.warn("[ASK] Model not initialized, using fallback");
+    return fallbackAskReply(message);
+  }
 
   try {
-    const result = await model.generateContent(message);
-    return result?.response?.text?.() || fallbackAskReply(message);
+    console.log("[ASK] Calling Gemini API with message:", message.substring(0, 50));
+    const result = await retryWithBackoff(() => model.generateContent(message), 3, 2000);
+    const text = result?.response?.text?.();
+    if (text) {
+      console.log("[ASK] Gemini returned:", text.substring(0, 50));
+      return text;
+    }
+    console.warn("[ASK] Gemini returned empty response, using fallback");
+    return fallbackAskReply(message);
   } catch (error) {
-    if (isGeminiAuthError(error)) return fallbackAskReply(message);
+    console.error("[ASK] Error from Gemini:", error.message);
+    if (isGeminiAuthError(error) || isGeminiTemporaryError(error)) {
+      console.log("[ASK] Temporary/Auth error detected, using fallback");
+      return fallbackAskReply(message);
+    }
     throw error;
   }
 };

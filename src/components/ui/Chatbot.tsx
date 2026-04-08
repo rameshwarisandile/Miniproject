@@ -176,7 +176,6 @@ const Chatbot: React.FC = () => {
     recognition.onstart = () => {
       setIsListening(true);
       isListeningRef.current = true;
-      console.log("[SpeechRecognition] onstart");
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -190,7 +189,6 @@ const Chatbot: React.FC = () => {
         }
       }
       setTranscript(finalTranscript + interimTranscript);
-      console.log("[SpeechRecognition] onresult", finalTranscript + interimTranscript);
 
       // Only send on final result, and only once
       if (
@@ -209,7 +207,6 @@ const Chatbot: React.FC = () => {
     recognition.onerror = (event: any) => {
       setIsListening(false);
       isListeningRef.current = false;
-      console.log("[SpeechRecognition] onerror", event.error);
       if (event.error === "no-speech") {
         setError("No speech detected, retrying...");
         setTimeout(() => {
@@ -229,7 +226,6 @@ const Chatbot: React.FC = () => {
     recognition.onend = () => {
       setIsListening(false);
       isListeningRef.current = false;
-      console.log("[SpeechRecognition] onend");
       // Only restart if user hasn't manually stopped
       if (isListeningRef.current) {
         setTimeout(() => {
@@ -242,7 +238,6 @@ const Chatbot: React.FC = () => {
 
     try {
       recognition.start();
-      console.log("[SpeechRecognition] start called");
     } catch (err) {
       setError("Could not start microphone.");
       setIsListening(false);

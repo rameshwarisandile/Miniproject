@@ -116,6 +116,7 @@ const MoodTracker = () => {
       const data = await response.json();
       const replyText = (data?.reply || "").toString();
 
+      // Parse suggestions from response
       const parsed = replyText
         .split("\n")
         .map((line: string) => line.replace(/^\s*(\d+[.)]|[-*])\s*/, "").trim())
@@ -123,17 +124,34 @@ const MoodTracker = () => {
         .slice(0, 4);
 
       if (parsed.length === 0) {
-        setAiSuggestions(["AI se suggestions parse nahi ho paaye. Please try again."]);
+        // If no suggestions parsed, fall back to local suggestions
+        console.log("No parsed suggestions, using local fallback");
+        setAiSuggestions(getSuggestionsForMood());
+        setAiError("");
       } else {
         setAiSuggestions(parsed);
+        setAiError("");
       }
     } catch (error) {
-      setAiError("AI suggestions abhi unavailable hain. Please thodi der baad try karein.");
-      setAiSuggestions([]);
+      console.error("Error fetching AI suggestions:", error);
+      // On error, fall back to local mood suggestions
+      setAiSuggestions(getSuggestionsForMood());
+      setAiError("Local mood guidance dikhaya ja raha hai (AI temporarily unavailable).");
     } finally {
       setAiLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Auto-fetch AI suggestions when suggestion panel opens and mood is selected
+    if (showSuggestions && selectedMood && aiSuggestions.length === 0) {
+      const timeoutId = window.setTimeout(() => {
+        console.log("Auto-fetching AI suggestions for mood:", selectedMood);
+        fetchAiSuggestions();
+      }, 300); // Small delay to ensure smooth UX
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [showSuggestions, selectedMood]);
 
   useEffect(() => {
     // Load only current user's moods
